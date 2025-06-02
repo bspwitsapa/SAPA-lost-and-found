@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #1e8449; --primary-dark: #145a32; --primary-light: #82e0aa; --secondary: #ffffff; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; }
+        .btn-primary { background-color: var(--primary); color: white; transition: all 0.3s; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); }
+        .header-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
+            <div class="text-center mb-8">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-24 mx-auto mb-4" onerror="this.onerror=null; this.src='https://placehold.co/100x100/E2E8F0/4A5568?text=Logo';">
+                <h1 class="text-3xl font-bold text-gray-800" style="color: var(--primary-dark);">SAPA Lost and Found</h1>
+                <p class="text-gray-600">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" class="form-input w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="กรอกชื่อผู้ใช้">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                    <input type="password" id="password" class="form-input w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="กรอกรหัสผ่าน">
+                </div>
+                <button id="loginBtn" class="btn-primary w-full py-3 px-4 rounded-md font-semibold text-lg">
+                    <span id="loginBtnText">เข้าสู่ระบบ</span>
+                    <svg id="loginSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+                <div id="loginError" class="hidden text-red-600 text-sm text-center pt-2">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec'; // <--- URL Updated!
+
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginError = document.getElementById('loginError');
+
+            if (localStorage.getItem('currentUser')) {
+                window.location.href = 'dashboard.html';
+            }
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', async function() {
+                    const username = usernameInput.value;
+                    const password = passwordInput.value;
+                    
+                    if (!username || !password) {
+                        if(loginError) {
+                            loginError.textContent = "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
+                            loginError.classList.remove('hidden');
+                        }
+                        return;
+                    }
+
+                    if(loginBtnText) loginBtnText.classList.add('hidden');
+                    if(loginSpinner) loginSpinner.classList.remove('hidden');
+                    loginBtn.disabled = true;
+                    if(loginError) loginError.classList.add('hidden');
+
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'text/plain;charset=utf-8', 
+                            },
+                            body: JSON.stringify({
+                                action: "loginUser",
+                                payload: { username: username, password: password }
+                            })
+                        });
+                        const result = await response.json();
+
+                        if (result.status === "success" && result.user) {
+                            localStorage.setItem('currentUser', JSON.stringify(result.user));
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            if(loginError) {
+                                loginError.textContent = result.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                                loginError.classList.remove('hidden');
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Login error:", error);
+                        if(loginError) {
+                             loginError.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง";
+                             loginError.classList.remove('hidden');
+                        }
+                    } finally {
+                        if(loginBtnText) loginBtnText.classList.remove('hidden');
+                        if(loginSpinner) loginSpinner.classList.add('hidden');
+                        loginBtn.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

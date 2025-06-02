@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - แจ้งของหาย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #1e8449; --primary-dark: #145a32; --primary-light: #82e0aa; --secondary: #ffffff; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; }
+        .btn-primary { background-color: var(--primary); color: white; transition: all 0.3s; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); transition: all 0.3s; }
+        .btn-outline:hover { background-color: var(--primary); color: white; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); outline:none; }
+        .header-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+        .logout-btn-custom { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.3s; }
+        .logout-btn-custom:hover { background-color: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                 <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ: ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">ออกจากระบบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="lostItemFormContainer" class="bg-white rounded-xl shadow-xl p-6 sm:p-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <button class="back-btn mr-3 text-green-600 hover:text-green-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                แจ้งของหาย
+            </h2>
+            
+            <form id="lostItemActualForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="reporterFullName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุลผู้แจ้ง <span class="text-red-500">*</span></label>
+                        <input type="text" id="reporterFullName" name="reporterFullName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ชื่อ-นามสกุลของคุณ" required>
+                    </div>
+                    <div>
+                        <label for="reporterGrade" class="block text-sm font-medium text-gray-700 mb-1">ระดับชั้น (ถ้ามี)</label>
+                        <input type="text" id="reporterGrade" name="reporterGrade" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="เช่น ม.3/1">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="reporterContactPhone" class="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์ติดต่อ <span class="text-red-500">*</span></label>
+                        <input type="tel" id="reporterContactPhone" name="reporterContactPhone" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="เบอร์โทรศัพท์ที่ติดต่อได้" required>
+                    </div>
+                    <div>
+                        <label for="itemType" class="block text-sm font-medium text-gray-700 mb-1">ประเภทของ <span class="text-red-500">*</span></label>
+                        <select id="itemType" name="itemType" class="form-select w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                            <option value="">-- เลือกประเภท --</option>
+                            <option value="โทรศัพท์มือถือ">โทรศัพท์มือถือ</option>
+                            <option value="กระเป๋าสตางค์">กระเป๋าสตางค์</option>
+                            <option value="กระเป๋า">กระเป๋า</option>
+                            <option value="เงิน">เงิน</option>
+                            <option value="บัตรนักเรียน">บัตรนักเรียน</option>
+                            <option value="อุปกรณ์การเรียน">อุปกรณ์การเรียน</option>
+                             <option value="กุญแจ">กุญแจ</option>
+                            <option value="อื่นๆ">อื่นๆ</option>
+                        </select>
+                    </div>
+                </div>
+                 <div>
+                    <label for="itemNameOrBrand" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ/ยี่ห้อของ (ถ้ามี)</label>
+                    <input type="text" id="itemNameOrBrand" name="itemNameOrBrand" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="เช่น iPhone 12, กระเป๋า Kipling">
+                </div>
+                <div>
+                    <label for="itemColor" class="block text-sm font-medium text-gray-700 mb-1">สีของ (ถ้ามี)</label>
+                    <input type="text" id="itemColor" name="itemColor" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="เช่น สีดำ, สีแดงลายจุด">
+                </div>
+                <div>
+                    <label for="itemDescription" class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดของที่หาย <span class="text-red-500">*</span></label>
+                    <textarea id="itemDescription" name="itemDescription" class="form-textarea w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" rows="3" placeholder="อธิบายรายละเอียดของที่หาย เช่น ยี่ห้อ สี ลักษณะเฉพาะ" required></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="locationLost" class="block text-sm font-medium text-gray-700 mb-1">สถานที่ทำหาย (ถ้าทราบ)</label>
+                        <input type="text" id="locationLost" name="locationLost" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ระบุสถานที่ที่คาดว่าทำหาย">
+                    </div>
+                    <div>
+                        <label for="dateLost" class="block text-sm font-medium text-gray-700 mb-1">วันที่ทำหาย <span class="text-red-500">*</span></label>
+                        <input type="date" id="dateLost" name="dateLost" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="additionalNotes" class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุเพิ่มเติม</label>
+                    <textarea id="additionalNotes" name="additionalNotes" class="form-textarea w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" rows="2" placeholder="ข้อมูลอื่นๆ ที่ต้องการแจ้ง"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="btn-outline px-6 py-2 rounded-md back-btn-form">ยกเลิก</button>
+                    <button type="submit" id="saveLostItemBtn" class="btn-primary px-6 py-2 rounded-md">
+                        <span id="saveBtnText">บันทึกข้อมูล</span>
+                        <svg id="saveSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="formMessage" class="hidden text-sm text-center mt-4 p-3 rounded-md"></div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec'; // <--- URL Updated!
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userDisplayNameEl = document.getElementById('userDisplayName');
+            const userRoleEl = document.getElementById('userRole');
+            
+            // Auto-fill reporter name if logged in, otherwise require input
+            const reporterFullNameInput = document.getElementById('reporterFullName');
+
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (userDisplayNameEl) userDisplayNameEl.textContent = currentUser.fullName;
+            if (userRoleEl) userRoleEl.textContent = `สถานะ: ${currentUser.role === 'admin' ? 'แอดมิน' : 'ผู้ใช้งาน'}`;
+            if (reporterFullNameInput) { // If this field exists, prefill it
+                reporterFullNameInput.value = currentUser.fullName;
+            }
+
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+            document.querySelectorAll('.back-btn, .back-btn-form').forEach(btn => {
+                btn.addEventListener('click', function() { window.location.href = 'dashboard.html'; });
+            });
+            
+            const lostItemForm = document.getElementById('lostItemActualForm');
+            const saveLostItemBtn = document.getElementById('saveLostItemBtn');
+            const saveBtnText = document.getElementById('saveBtnText');
+            const saveSpinner = document.getElementById('saveSpinner');
+            const formMessage = document.getElementById('formMessage');
+
+            if (lostItemForm) {
+                lostItemForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(lostItemForm);
+                    const itemData = {
+                        reporterUserId: currentUser.userId,
+                        reporterFullName: formData.get('reporterFullName'), // Use form value
+                        reporterGrade: formData.get('reporterGrade'),
+                        reporterContactPhone: formData.get('reporterContactPhone'),
+                        itemType: formData.get('itemType'),
+                        itemNameOrBrand: formData.get('itemNameOrBrand'),
+                        itemColor: formData.get('itemColor'),
+                        itemDescription: formData.get('itemDescription'),
+                        locationLost: formData.get('locationLost'),
+                        dateLost: formData.get('dateLost'),
+                        additionalNotes: formData.get('additionalNotes')
+                    };
+
+                    if (!itemData.reporterFullName || !itemData.reporterContactPhone || !itemData.itemType || !itemData.itemDescription || !itemData.dateLost) {
+                         showMessage("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน", "error");
+                        return;
+                    }
+                    
+                    if(saveBtnText) saveBtnText.classList.add('hidden');
+                    if(saveSpinner) saveSpinner.classList.remove('hidden');
+                    if(saveLostItemBtn) saveLostItemBtn.disabled = true;
+                    hideMessage();
+
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: "addLostItem",
+                                payload: itemData
+                            })
+                        });
+                        const result = await response.json();
+
+                        if (result.status === "success") {
+                            showMessage("บันทึกข้อมูลการแจ้งของหายสำเร็จ!", "success");
+                            lostItemForm.reset();
+                             if (reporterFullNameInput) reporterFullNameInput.value = currentUser.fullName; // Refill after reset
+                            setTimeout(() => {
+                                window.location.href = "items_list.html";
+                            }, 1500);
+                        } else {
+                            showMessage("เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถบันทึกข้อมูลได้"), "error");
+                        }
+                    } catch (error) {
+                        console.error("Save lost item error:", error);
+                        showMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง", "error");
+                    } finally {
+                        if(saveBtnText) saveBtnText.classList.remove('hidden');
+                        if(saveSpinner) saveSpinner.classList.add('hidden');
+                        if(saveLostItemBtn) saveLostItemBtn.disabled = false;
+                    }
+                });
+            }
+            function showMessage(message, type = "success") {
+                if (!formMessage) return;
+                formMessage.textContent = message;
+                formMessage.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                if (type === "success") {
+                    formMessage.classList.add('bg-green-100', 'text-green-700');
+                } else {
+                    formMessage.classList.add('bg-red-100', 'text-red-700');
+                }
+            }
+            function hideMessage(){
+                 if (formMessage) formMessage.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

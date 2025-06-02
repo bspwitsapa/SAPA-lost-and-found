@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - จัดการระบบ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #1e8449; --primary-dark: #145a32; --primary-light: #82e0aa; --secondary: #ffffff; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; }
+        .btn-primary { background-color: var(--primary); color: white; transition: all 0.3s; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); transition: all 0.3s; }
+        .btn-outline:hover { background-color: var(--primary); color: white; }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); outline:none;}
+        .header-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+        .logout-btn-custom { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.3s; }
+        .logout-btn-custom:hover { background-color: rgba(255,255,255,0.2); }
+        .table th { background-color: #E6FFFA; }
+        .modal-content { max-height: 90vh; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ: ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">ออกจากระบบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="adminPanelPageContent" class="bg-white rounded-xl shadow-xl p-6 sm:p-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <button class="back-btn mr-3 text-green-600 hover:text-green-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                จัดการระบบ
+            </h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 pb-2 border-b">จัดการผู้ใช้งาน</h3>
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <div class="flex-grow">
+                        <input type="text" id="userSearchInput" placeholder="ค้นหาผู้ใช้ด้วยชื่อผู้ใช้ หรือ ชื่อ-นามสกุล..." class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                    </div>
+                    <button id="openAddUserModalBtn" class="btn-primary px-4 py-2 rounded-md flex items-center justify-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span>เพิ่มผู้ใช้</span>
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 table">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้ใช้</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-นามสกุล</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สิทธิ์</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่สร้าง</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เข้าระบบล่าสุด</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                    <p id="usersLoadingMessage" class="text-center text-gray-500 py-4">กำลังโหลดข้อมูลผู้ใช้...</p>
+                    <p id="noUsersMessage" class="text-center text-gray-500 py-4 hidden">ไม่พบข้อมูลผู้ใช้</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="userModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b">
+                    <h3 id="userModalTitle" class="text-2xl font-bold text-gray-800">เพิ่มผู้ใช้งาน</h3>
+                    <button id="closeUserModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <form id="userForm" class="space-y-5">
+                    <input type="hidden" id="userIdToEdit">
+                    <div>
+                        <label for="formUsername" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้ <span class="text-red-500">*</span></label>
+                        <input type="text" id="formUsername" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ชื่อผู้ใช้ (สำหรับเข้าระบบ)" required>
+                    </div>
+                    <div>
+                        <label for="formPassword" class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน <span id="passwordRequiredIndicator" class="text-red-500">*</span></label>
+                        <input type="password" id="formPassword" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="รหัสผ่าน">
+                        <p id="passwordHelp" class="text-xs text-gray-500 mt-1">ต้องมีอย่างน้อย 6 ตัวอักษร (เว้นว่างถ้าไม่ต้องการเปลี่ยนรหัสผ่านตอนแก้ไข)</p>
+                    </div>
+                    <div>
+                        <label for="formFullName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล <span class="text-red-500">*</span></label>
+                        <input type="text" id="formFullName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ชื่อ-นามสกุล (สำหรับแสดงผล)" required>
+                    </div>
+                    <div>
+                        <label for="formRole" class="block text-sm font-medium text-gray-700 mb-1">สิทธิ์ <span class="text-red-500">*</span></label>
+                        <select id="formRole" class="form-select w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
+                            <option value="user">ผู้ใช้งาน</option>
+                            <option value="admin">แอดมิน</option>
+                        </select>
+                    </div>
+                    <div class="border-t pt-4 mt-6">
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="cancelUserFormBtn" class="btn-outline px-5 py-2 rounded-md">ยกเลิก</button>
+                            <button type="submit" id="saveUserBtn" class="btn-primary px-5 py-2 rounded-md">
+                                <span id="saveUserBtnText">บันทึก</span>
+                                <svg id="saveUserSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                     <div id="userFormMessage" class="hidden text-sm text-center mt-4 p-3 rounded-md"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec'; // <--- URL Updated!
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userDisplayNameEl = document.getElementById('userDisplayName');
+            const userRoleEl = document.getElementById('userRole');
+
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+                window.location.href = currentUser ? 'dashboard.html' : 'login.html';
+                return;
+            }
+
+            if(userDisplayNameEl) userDisplayNameEl.textContent = currentUser.fullName;
+            if(userRoleEl) userRoleEl.textContent = `สถานะ: ${currentUser.role === 'admin' ? 'แอดมิน' : 'ผู้ใช้งาน'}`;
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+            document.querySelector('.back-btn').addEventListener('click', function() {
+                window.location.href = 'dashboard.html';
+            });
+
+            let allSiteUsers = [];
+            const usersTableBody = document.getElementById('usersTableBody');
+            const userModal = document.getElementById('userModal');
+            const userModalTitle = document.getElementById('userModalTitle');
+            const closeUserModal = document.getElementById('closeUserModal');
+            const cancelUserFormBtn = document.getElementById('cancelUserFormBtn');
+            const userForm = document.getElementById('userForm');
+            const openAddUserModalBtn = document.getElementById('openAddUserModalBtn');
+            const userIdToEditInput = document.getElementById('userIdToEdit');
+            const formUsernameInput = document.getElementById('formUsername');
+            const formPasswordInput = document.getElementById('formPassword');
+            const formFullNameInput = document.getElementById('formFullName');
+            const formRoleInput = document.getElementById('formRole');
+            const passwordHelp = document.getElementById('passwordHelp');
+            const passwordRequiredIndicator = document.getElementById('passwordRequiredIndicator');
+            
+            const saveUserBtn = document.getElementById('saveUserBtn');
+            const saveUserBtnText = document.getElementById('saveUserBtnText');
+            const saveUserSpinner = document.getElementById('saveUserSpinner');
+            const userFormMessage = document.getElementById('userFormMessage');
+            
+            const usersLoadingMessage = document.getElementById('usersLoadingMessage');
+            const noUsersMessage = document.getElementById('noUsersMessage');
+            const userSearchInput = document.getElementById('userSearchInput');
+
+
+            function getRoleBadge(role) {
+                if (role === 'admin') {
+                    return `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">แอดมิน</span>`;
+                }
+                return `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">ผู้ใช้งาน</span>`;
+            }
+
+            function renderUsers(usersToRender) {
+                if(!usersTableBody || !noUsersMessage) return;
+                usersTableBody.innerHTML = '';
+                if (usersToRender.length === 0) {
+                    noUsersMessage.classList.remove('hidden');
+                    return;
+                }
+                noUsersMessage.classList.add('hidden');
+
+                usersToRender.forEach(user => {
+                    const row = usersTableBody.insertRow();
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${user.username}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">${user.fullName}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap">${getRoleBadge(user.role)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.dateCreated || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.lastLogin || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="edit-user-btn text-blue-600 hover:text-blue-900 mr-3" data-id="${user.userId}">แก้ไข</button>
+                            ${currentUser.username !== user.username ? `<button class="delete-user-btn text-red-600 hover:text-red-900" data-id="${user.userId}" data-username="${user.username}">ลบ</button>` : ''}
+                        </td>
+                    `;
+                });
+                addEventListenersToUserTableButtons();
+            }
+            
+            function addEventListenersToUserTableButtons() {
+                 document.querySelectorAll('.edit-user-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const userId = this.dataset.id;
+                        openUserModal(userId);
+                    });
+                });
+                document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const userId = this.dataset.id;
+                        const username = this.dataset.username;
+                        if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้ "${username}"?`)) {
+                            deleteUserAction(userId);
+                        }
+                    });
+                });
+            }
+
+            function openUserModal(userId = null) { 
+                if(!userModal || !userForm || !userModalTitle || !userIdToEditInput || !formPasswordInput || !passwordHelp || !passwordRequiredIndicator || !userFormMessage) return;
+                userForm.reset();
+                hideUserFormMessage();
+                userIdToEditInput.value = userId ? userId : '';
+                if (userId) {
+                    userModalTitle.textContent = 'แก้ไขผู้ใช้งาน';
+                    formPasswordInput.placeholder = "เว้นว่างถ้าไม่ต้องการเปลี่ยน";
+                    passwordHelp.textContent = "เว้นว่างถ้าไม่ต้องการเปลี่ยนรหัสผ่าน";
+                    formPasswordInput.required = false; 
+                    passwordRequiredIndicator.classList.add('hidden');
+                    const user = allSiteUsers.find(u => u.userId == userId); // Note: userId might be string from dataset
+                    if (user) {
+                        if(formUsernameInput) formUsernameInput.value = user.username;
+                        if(formFullNameInput) formFullNameInput.value = user.fullName;
+                        if(formRoleInput) formRoleInput.value = user.role;
+                    }
+                } else {
+                    userModalTitle.textContent = 'เพิ่มผู้ใช้งาน';
+                    formPasswordInput.placeholder = "รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)";
+                    passwordHelp.textContent = "ต้องมีอย่างน้อย 6 ตัวอักษร";
+                    formPasswordInput.required = true;
+                    passwordRequiredIndicator.classList.remove('hidden');
+                }
+                userModal.classList.remove('hidden');
+            }
+
+            function closeUserModalFunction() {
+                if(userModal) userModal.classList.add('hidden');
+            }
+            
+            function showUserFormMessage(message, type = "success") {
+                if (!userFormMessage) return;
+                userFormMessage.textContent = message;
+                userFormMessage.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                if (type === "success") {
+                    userFormMessage.classList.add('bg-green-100', 'text-green-700');
+                } else {
+                    userFormMessage.classList.add('bg-red-100', 'text-red-700');
+                }
+            }
+            function hideUserFormMessage(){
+                 if (userFormMessage) userFormMessage.classList.add('hidden');
+            }
+
+
+            if(openAddUserModalBtn) openAddUserModalBtn.addEventListener('click', () => openUserModal());
+            if(closeUserModal) closeUserModal.addEventListener('click', closeUserModalFunction);
+            if(cancelUserFormBtn) cancelUserFormBtn.addEventListener('click', closeUserModalFunction);
+
+            if(userForm) {
+                userForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const userId = userIdToEditInput.value ? userIdToEditInput.value : null;
+                    const username = formUsernameInput.value;
+                    const password = formPasswordInput.value;
+                    const fullName = formFullNameInput.value;
+                    const role = formRoleInput.value;
+
+                    if (!username || !fullName || !role) {
+                         showUserFormMessage("กรุณากรอกข้อมูลให้ครบถ้วน (*)", "error");
+                        return;
+                    }
+                    if (!userId && (!password || password.length < 6)) { // Require password for new user
+                         showUserFormMessage("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษรสำหรับผู้ใช้ใหม่", "error");
+                        return;
+                    }
+                     if (userId && password && password.length > 0 && password.length < 6) { // Password validation for edit if provided
+                        showUserFormMessage("หากต้องการเปลี่ยนรหัสผ่าน รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร", "error");
+                        return;
+                    }
+
+
+                    const action = userId ? "editUser" : "addUser";
+                    const payload = { username, password, fullName, role };
+                    if (userId) payload.userId = userId;
+
+                    if(saveUserBtnText) saveUserBtnText.classList.add('hidden');
+                    if(saveUserSpinner) saveUserSpinner.classList.remove('hidden');
+                    if(saveUserBtn) saveUserBtn.disabled = true;
+                    hideUserFormMessage();
+
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: action, payload: payload })
+                        });
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            showUserFormMessage(userId ? "แก้ไขข้อมูลผู้ใช้สำเร็จ!" : "เพิ่มผู้ใช้สำเร็จ!", "success");
+                            fetchUsers(); // Refresh user list
+                            setTimeout(closeUserModalFunction, 1500);
+                        } else {
+                            showUserFormMessage("เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถบันทึกข้อมูลได้"), "error");
+                        }
+                    } catch (error) {
+                         console.error("Save user error:", error);
+                         showUserFormMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
+                    } finally {
+                        if(saveUserBtnText) saveUserBtnText.classList.remove('hidden');
+                        if(saveUserSpinner) saveUserSpinner.classList.add('hidden');
+                        if(saveUserBtn) saveUserBtn.disabled = false;
+                    }
+                });
+            }
+            
+            async function deleteUserAction(userId) {
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: "deleteUser", payload: { userId: userId }})
+                    });
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        alert("ลบผู้ใช้สำเร็จ!");
+                        fetchUsers(); // Refresh
+                    } else {
+                        alert("เกิดข้อผิดพลาดในการลบผู้ใช้: " + result.message);
+                    }
+                } catch (error) {
+                     console.error("Delete user error:", error);
+                     alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+                }
+            }
+
+            async function fetchUsers() {
+                if (!usersLoadingMessage || !usersTableBody || !noUsersMessage) return;
+                usersLoadingMessage.classList.remove('hidden');
+                usersTableBody.innerHTML = '';
+                noUsersMessage.classList.add('hidden');
+
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getUsers`);
+                    const result = await response.json();
+                    if (result.status === "success" && result.users) {
+                        allSiteUsers = result.users;
+                        renderUsers(allSiteUsers);
+                    } else {
+                        noUsersMessage.textContent = "ไม่สามารถโหลดข้อมูลผู้ใช้ได้: " + result.message;
+                        noUsersMessage.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Fetch users error:", error);
+                    noUsersMessage.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อโหลดข้อมูลผู้ใช้";
+                    noUsersMessage.classList.remove('hidden');
+                } finally {
+                    usersLoadingMessage.classList.add('hidden');
+                }
+            }
+            
+            if(userSearchInput) {
+                userSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredUsers = allSiteUsers.filter(user => 
+                        user.username.toLowerCase().includes(searchTerm) ||
+                        user.fullName.toLowerCase().includes(searchTerm)
+                    );
+                    renderUsers(filteredUsers);
+                });
+            }
+
+            fetchUsers(); // Initial load of users
+        });
+    </script>
+</body>
+</html>

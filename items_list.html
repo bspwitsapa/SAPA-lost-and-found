@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - รายการของทั้งหมด</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #1e8449; --primary-dark: #145a32; --primary-light: #82e0aa; --secondary: #ffffff; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; }
+        .btn-primary { background-color: var(--primary); color: white; transition: all 0.3s; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); transition: all 0.3s; }
+        .btn-outline:hover { background-color: var(--primary); color: white; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); outline:none; }
+        .header-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+        .logout-btn-custom { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.3s; }
+        .logout-btn-custom:hover { background-color: rgba(255,255,255,0.2); }
+        .table th { background-color: #E6FFFA; }
+        .modal-content { max-height: 90vh; }
+        .status-badge { display: inline-flex; padding: 0.25rem 0.75rem; font-size: 0.75rem; line-height: 1rem; font-weight: 600; border-radius: 9999px; }
+        .status-badge.found { background-color: #d1fae5; color: #065f46; } 
+        .status-badge.lost { background-color: #fee2e2; color: #991b1b; } 
+        .status-badge.claimed, .status-badge.returned, .status-badge.resolved { background-color: #dbeafe; color: #1e40af; } 
+        .status-badge.default { background-color: #e5e7eb; color: #374151; } 
+        .detail-modal-image { max-height: 20rem; width: auto; margin: 0 auto; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
+        .image-preview-container { width: 100%; max-width: 200px; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; overflow: hidden; }
+        .image-preview { width: 100%; height: auto; display: block; }
+        .camera-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1050; }
+        .camera-modal-content { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 90%; width: 500px; }
+        #sharedCameraFeed { width: 100%; max-width: 400px; height: auto; border: 1px solid #ccc; margin-bottom: 15px; border-radius: 4px; background-color: #333; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ: ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">ออกจากระบบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="itemsListContainer" class="bg-white rounded-xl shadow-xl p-6 sm:p-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <button class="back-btn mr-3 text-green-600 hover:text-green-800 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                รายการของทั้งหมด
+            </h2>
+            
+            <div class="mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex-grow">
+                        <input type="text" id="searchInput" placeholder="ค้นหาด้วยรายละเอียด, ประเภท, สถานที่..." class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                    </div>
+                    <div class="flex space-x-2">
+                        <select id="reportTypeFilter" class="form-select px-4 py-2 border border-gray-300 rounded-md focus:outline-none">
+                            <option value="all">ของทั้งหมด (แจ้งพบ/แจ้งหาย)</option>
+                            <option value="found">ของที่พบ (รอรับคืน)</option>
+                            <option value="lost">ของที่แจ้งหาย (ยังไม่พบ)</option>
+                        </select>
+                        <button id="searchBtn" class="btn-primary px-4 py-2 rounded-md">ค้นหา</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 table">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทรายงาน</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทของ</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียด</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานที่</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่แจ้งเข้าระบบ</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+                 <p id="loadingMessage" class="text-center text-gray-500 py-4">กำลังโหลดข้อมูล...</p>
+                 <p id="noResultsMessage" class="text-center text-gray-500 py-4 hidden">ไม่พบข้อมูล</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="itemDetailModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl modal-content overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b">
+                    <h3 class="text-2xl font-bold text-gray-800">รายละเอียดของ</h3>
+                    <button id="closeDetailModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div id="modalDetailContent" class="space-y-5"></div>
+                <div class="border-t pt-4 mt-6">
+                    <div class="flex justify-end space-x-3">
+                        <button id="closeDetailModalBtn" class="btn-outline px-5 py-2 rounded-md">ปิด</button>
+                        <button id="actionFromDetailBtn" class="btn-primary px-5 py-2 rounded-md">ดำเนินการ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="claimItemModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-[60] transition-opacity duration-300 ease-in-out">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b">
+                    <h3 id="claimItemModalTitle" class="text-2xl font-bold text-gray-800">บันทึกการรับคืนของ</h3>
+                     <button id="closeClaimItemModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <form id="claimItemForm" class="space-y-5">
+                    <input type="hidden" id="claimFoundItemId">
+                    <div>
+                        <label for="claimerFullName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุลผู้รับคืน <span class="text-red-500">*</span></label>
+                        <input type="text" id="claimerFullName" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ชื่อ-นามสกุลผู้รับคืน" required>
+                    </div>
+                     <div>
+                        <label for="claimReturnNotes" class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+                        <textarea id="claimReturnNotes" name="returnNotes" class="form-textarea w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" rows="2" placeholder="ข้อมูลเพิ่มเติมเกี่ยวกับการรับคืน"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพหลักฐานการคืน (ถ้ามี)</label>
+                        <div class="flex items-center space-x-3">
+                            <label for="claimProofImageFile" class="cursor-pointer btn-outline px-4 py-2 rounded-md text-sm">เลือกไฟล์</label>
+                            <input type="file" id="claimProofImageFile" class="hidden" accept="image/*">
+                            <button type="button" id="openClaimCameraBtn" class="btn-primary px-4 py-2 rounded-md text-sm">ถ่ายรูป</button>
+                        </div>
+                        <div id="claimProofImagePreviewContainer" class="image-preview-container hidden mt-2">
+                            <img id="claimProofImagePreview" src="#" alt="ตัวอย่างรูปภาพหลักฐาน" class="image-preview"/>
+                        </div>
+                    </div>
+                    <div class="border-t pt-4 mt-6">
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="cancelClaimItemBtn" class="btn-outline px-5 py-2 rounded-md">ยกเลิก</button>
+                            <button type="submit" id="confirmClaimItemBtn" class="btn-primary px-5 py-2 rounded-md">
+                                <span id="confirmClaimBtnText">ยืนยันการรับคืน</span>
+                                <svg id="confirmClaimSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                     <div id="claimFormMessage" class="hidden text-sm text-center mt-4 p-3 rounded-md"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="resolveLostItemModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-[60] transition-opacity duration-300 ease-in-out">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b">
+                    <h3 id="resolveLostItemModalTitle" class="text-2xl font-bold text-gray-800">ยืนยันการเจอของ (ที่เคยแจ้งหาย)</h3>
+                     <button id="closeResolveLostItemModal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <form id="resolveLostItemForm" class="space-y-5">
+                    <input type="hidden" id="resolveLostItemId">
+                    <div>
+                        <p class="text-sm text-gray-700">คุณ: <span id="resolveLostItemUserFullName" class="font-semibold"></span></p>
+                        <p class="text-sm text-gray-700 mt-1">กำลังจะยืนยันว่าคุณได้พบของที่เคยแจ้งหายไว้แล้ว รายการนี้จะถูกลบออกจากระบบ</p>
+                    </div>
+                     <div>
+                        <label for="resolveLostNotes" class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+                        <textarea id="resolveLostNotes" name="resolveLostNotes" class="form-textarea w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" rows="2" placeholder="เช่น เจอที่ไหน, สภาพเป็นอย่างไร"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพหลักฐานการเจอ (ถ้ามี)</label>
+                        <div class="flex items-center space-x-3">
+                            <label for="resolveLostProofImageFile" class="cursor-pointer btn-outline px-4 py-2 rounded-md text-sm">เลือกไฟล์</label>
+                            <input type="file" id="resolveLostProofImageFile" class="hidden" accept="image/*">
+                            <button type="button" id="openResolveLostCameraBtn" class="btn-primary px-4 py-2 rounded-md text-sm">ถ่ายรูป</button>
+                        </div>
+                        <div id="resolveLostProofImagePreviewContainer" class="image-preview-container hidden mt-2">
+                            <img id="resolveLostProofImagePreview" src="#" alt="ตัวอย่างรูปภาพหลักฐาน" class="image-preview"/>
+                        </div>
+                    </div>
+                    <div class="border-t pt-4 mt-6">
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" id="cancelResolveLostItemBtn" class="btn-outline px-5 py-2 rounded-md">ยกเลิก</button>
+                            <button type="submit" id="confirmResolveLostItemBtn" class="btn-primary px-5 py-2 rounded-md">
+                                <span id="confirmResolveLostBtnText">ยืนยันและลบรายการ</span>
+                                <svg id="confirmResolveLostSpinner" class="animate-spin h-5 w-5 text-white mx-auto hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                     <div id="resolveLostFormMessage" class="hidden text-sm text-center mt-4 p-3 rounded-md"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="sharedCameraModal" class="camera-modal-overlay hidden">
+        <div class="camera-modal-content">
+            <h3 class="text-xl font-semibold mb-4">ถ่ายรูปภาพหลักฐาน</h3>
+            <video id="sharedCameraFeed" autoplay playsinline></video>
+            <div class="space-x-3 mt-4">
+                <button id="captureSharedImageButton" class="btn-primary px-6 py-2 rounded-md">ถ่ายภาพ</button>
+                <button id="cancelSharedCameraButton" class="btn-outline px-6 py-2 rounded-md">ยกเลิก</button>
+            </div>
+             <p id="sharedCameraErrorMessage" class="text-red-500 text-sm mt-3 hidden"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec';
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userDisplayNameEl = document.getElementById('userDisplayName');
+            const userRoleEl = document.getElementById('userRole');
+
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if(userDisplayNameEl) userDisplayNameEl.textContent = currentUser.fullName;
+            if(userRoleEl) userRoleEl.textContent = `สถานะ: ${currentUser.role === 'admin' ? 'แอดมิน' : 'ผู้ใช้งาน'}`;
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+            document.querySelector('.back-btn').addEventListener('click', function() {
+                window.location.href = 'dashboard.html';
+            });
+
+            let allFetchedItems = []; 
+            const itemsTableBody = document.getElementById('itemsTableBody');
+            const itemDetailModal = document.getElementById('itemDetailModal');
+            const closeDetailModal = document.getElementById('closeDetailModal');
+            const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+            const modalDetailContent = document.getElementById('modalDetailContent');
+            const actionFromDetailBtn = document.getElementById('actionFromDetailBtn');
+            
+            // Claim Item Modal Elements
+            const claimItemModal = document.getElementById('claimItemModal'); 
+            const closeClaimItemModal = document.getElementById('closeClaimItemModal');
+            const cancelClaimItemBtn = document.getElementById('cancelClaimItemBtn');
+            const claimItemForm = document.getElementById('claimItemForm');
+            const claimFoundItemIdInput = document.getElementById('claimFoundItemId');
+            const claimProofImageFileInput = document.getElementById('claimProofImageFile');
+            const openClaimCameraBtn = document.getElementById('openClaimCameraBtn');
+            const claimProofImagePreviewContainer = document.getElementById('claimProofImagePreviewContainer');
+            const claimProofImagePreview = document.getElementById('claimProofImagePreview');
+            const confirmClaimItemBtn = document.getElementById('confirmClaimItemBtn');
+            const confirmClaimBtnText = document.getElementById('confirmClaimBtnText');
+            const confirmClaimSpinner = document.getElementById('confirmClaimSpinner');
+            const claimFormMessage = document.getElementById('claimFormMessage');
+            let claimProofImageBase64 = null;
+
+            // Resolve Lost Item Modal Elements
+            const resolveLostItemModal = document.getElementById('resolveLostItemModal');
+            const closeResolveLostItemModal = document.getElementById('closeResolveLostItemModal');
+            const cancelResolveLostItemBtn = document.getElementById('cancelResolveLostItemBtn');
+            const resolveLostItemForm = document.getElementById('resolveLostItemForm');
+            const resolveLostItemIdInput = document.getElementById('resolveLostItemId');
+            const resolveLostItemUserFullNameSpan = document.getElementById('resolveLostItemUserFullName');
+            const resolveLostProofImageFileInput = document.getElementById('resolveLostProofImageFile');
+            const openResolveLostCameraBtn = document.getElementById('openResolveLostCameraBtn');
+            const resolveLostProofImagePreviewContainer = document.getElementById('resolveLostProofImagePreviewContainer');
+            const resolveLostProofImagePreview = document.getElementById('resolveLostProofImagePreview');
+            const confirmResolveLostItemBtn = document.getElementById('confirmResolveLostItemBtn');
+            const confirmResolveLostBtnText = document.getElementById('confirmResolveLostBtnText');
+            const confirmResolveLostSpinner = document.getElementById('confirmResolveLostSpinner');
+            const resolveLostFormMessage = document.getElementById('resolveLostFormMessage');
+            let resolveLostProofImageBase64 = null;
+
+
+            // Shared Camera Modal Elements
+            const sharedCameraModal = document.getElementById('sharedCameraModal');
+            const sharedCameraFeed = document.getElementById('sharedCameraFeed');
+            const captureSharedImageButton = document.getElementById('captureSharedImageButton');
+            const cancelSharedCameraButton = document.getElementById('cancelSharedCameraButton');
+            const sharedCameraErrorMessage = document.getElementById('sharedCameraErrorMessage');
+            let sharedStream = null;
+            let currentImageTarget = null; // 'claimProof' or 'resolveLostProof'
+
+            const loadingMessage = document.getElementById('loadingMessage');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const searchInput = document.getElementById('searchInput');
+            const reportTypeFilter = document.getElementById('reportTypeFilter');
+            const searchBtn = document.getElementById('searchBtn');
+
+            function getStatusBadge(status, reportType) {
+                let badgeClass = 'status-badge default';
+                let statusText = status; 
+                if (reportType === 'found') {
+                    if (status === 'awaiting_claim') { badgeClass = 'status-badge found'; statusText = 'รอรับคืน';}
+                } else if (reportType === 'lost') {
+                    if (status === 'actively_lost') { badgeClass = 'status-badge lost'; statusText = 'แจ้งหาย'; }
+                }
+                return `<span class="${badgeClass}">${statusText}</span>`;
+            }
+            
+            function renderItems(itemsToRender) {
+                if(!itemsTableBody || !noResultsMessage) return;
+                itemsTableBody.innerHTML = ''; 
+                if (itemsToRender.length === 0) {
+                    noResultsMessage.classList.remove('hidden');
+                    return;
+                }
+                noResultsMessage.classList.add('hidden');
+
+                itemsToRender.forEach(item => {
+                    const row = itemsTableBody.insertRow();
+                    let actionButtonsHTML = `<button class="view-detail-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="${item.itemId}" data-type="${item.reportType}">ดูรายละเอียด</button>`;
+                    
+                    if (item.reportType === 'found') { 
+                        actionButtonsHTML += `<button class="claim-item-btn text-blue-600 hover:text-blue-900" data-id="${item.itemId}">บันทึกการรับคืน</button>`;
+                    }
+                    if (item.reportType === 'lost' && item.reporterUserId && item.reporterUserId == currentUser.userId) {
+                        actionButtonsHTML += `<button class="resolve-lost-btn text-green-600 hover:text-green-900" data-id="${item.itemId}">ฉันเจอของแล้ว</button>`;
+                    }
+
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium ${item.reportType === 'lost' ? 'text-red-600' : 'text-green-600'}">${item.reportType === 'lost' ? 'แจ้งหาย' : 'แจ้งพบ'}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${item.itemType || '-'}</div></td>
+                        <td class="px-6 py-4"><div class="text-sm text-gray-900 truncate max-w-xs" title="${item.description || ''}">${item.description || '-'}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">${item.location || '-'}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">${item.dateReportedSystem || '-'}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap">${getStatusBadge(item.status, item.reportType)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            ${actionButtonsHTML}
+                        </td>
+                    `;
+                });
+                addEventListenersToTableButtons();
+            }
+
+            function addEventListenersToTableButtons() {
+                document.querySelectorAll('.view-detail-btn').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const itemId = this.dataset.id;
+                        const itemType = this.dataset.type; 
+                        try {
+                            showLoading(loadingMessage);
+                            const response = await fetch(`${APPS_SCRIPT_URL}?action=getItemDetails&itemId=${itemId}&itemType=${itemType}`);
+                            const result = await response.json();
+                            hideLoading(loadingMessage);
+                            if (result.status === 'success' && result.item) {
+                                showItemDetailModal(result.item);
+                            } else {
+                                alert('ไม่สามารถโหลดรายละเอียดได้: ' + result.message);
+                            }
+                        } catch (error) {
+                            hideLoading(loadingMessage);
+                            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อดูรายละเอียด');
+                            console.error("Error fetching item details:", error);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.claim-item-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const itemId = this.dataset.id;
+                        openClaimItemModal(itemId);
+                    });
+                });
+                document.querySelectorAll('.resolve-lost-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const itemId = this.dataset.id;
+                        openResolveLostItemModal(itemId); 
+                    });
+                });
+            }
+            
+            function showItemDetailModal(item) {
+                if (!item || !modalDetailContent || !itemDetailModal || !actionFromDetailBtn) return;
+                
+                let detailsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">รหัสรายการ</h4><p class="text-gray-900 text-lg">${item.reportType === 'found' ? item.foundItemId : item.lostItemId}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ประเภทรายงาน</h4><p class="text-gray-900 text-lg">${item.reportType === 'found' ? 'แจ้งพบ' : 'แจ้งหาย'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ประเภทของ</h4><p class="text-gray-900">${item.itemType || '-'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ชื่อ/ยี่ห้อ</h4><p class="text-gray-900">${item.itemNameOrBrand || '-'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สี</h4><p class="text-gray-900">${item.itemColor || '-'}</p></div>`;
+                detailsHtml += `<div class="md:col-span-2"><h4 class="text-sm font-medium text-gray-500 mb-1">รายละเอียด</h4><p class="text-gray-900 whitespace-pre-wrap">${item.itemDescription || '-'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สถานที่${item.reportType === 'found' ? 'พบ' : 'ทำหาย'}</h4><p class="text-gray-900">${item.reportType === 'found' ? item.locationFound : item.locationLost || '-'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">วันที่${item.reportType === 'found' ? 'พบ' : 'ทำหาย'}</h4><p class="text-gray-900">${item.reportType === 'found' ? (item.dateFound || '-') : (item.dateLost || '-')}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">วันที่แจ้งเข้าระบบ</h4><p class="text-gray-900">${item.dateReported || '-'}</p></div>`;
+                detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สถานะ</h4>${getStatusBadge(item.status, item.reportType)}</div>`;
+                
+                if (item.reportType === 'found') {
+                    detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ผู้แจ้งพบ</h4><p class="text-gray-900">${item.finderFullName || '-'}</p></div>`;
+                    if (item.finderContactPhone) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">เบอร์ติดต่อผู้แจ้งพบ</h4><p class="text-gray-900">${item.finderContactPhone}</p></div>`;
+                    if (item.imageUrl) { 
+                        detailsHtml += `<div class="md:col-span-2"><h4 class="text-sm font-medium text-gray-500 mb-1">รูปภาพ</h4><img src="${item.imageUrl}" alt="${item.itemType || 'Item Image'}" class="detail-modal-image" onerror="this.style.display='none'; const p = document.createElement('p'); p.textContent='ไม่สามารถโหลดรูปภาพได้'; this.parentNode.appendChild(p);"></div>`;
+                    }
+                    if (item.currentHoldingLocation) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สถานที่เก็บปัจจุบัน</h4><p class="text-gray-900">${item.currentHoldingLocation}</p></div>`;
+                } else { 
+                    detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterFullName || '-'}</p></div>`;
+                    if (item.reporterContactPhone) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">เบอร์ติดต่อผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterContactPhone}</p></div>`;
+                     if (item.reporterGrade) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ระดับชั้นผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterGrade}</p></div>`;
+                }
+                if (item.additionalNotes) detailsHtml += `<div class="md:col-span-2"><h4 class="text-sm font-medium text-gray-500 mb-1">หมายเหตุเพิ่มเติม</h4><p class="text-gray-900 whitespace-pre-wrap">${item.additionalNotes}</p></div>`;
+                detailsHtml += `</div>`;
+
+                modalDetailContent.innerHTML = detailsHtml;
+                actionFromDetailBtn.dataset.id = item.reportType === 'found' ? item.foundItemId : item.lostItemId;
+                actionFromDetailBtn.dataset.type = item.reportType;
+                actionFromDetailBtn.dataset.reporterUserId = item.reporterUserId || '';
+
+                if (item.reportType === 'found') { 
+                    actionFromDetailBtn.textContent = "บันทึกการรับคืน";
+                    actionFromDetailBtn.classList.remove('hidden');
+                } else if (item.reportType === 'lost' && item.reporterUserId && item.reporterUserId == currentUser.userId) {
+                    actionFromDetailBtn.textContent = "ฉันเจอของนี้แล้ว";
+                     actionFromDetailBtn.classList.remove('hidden');
+                } else {
+                    actionFromDetailBtn.classList.add('hidden');
+                }
+                itemDetailModal.classList.remove('hidden');
+            }
+
+            actionFromDetailBtn.addEventListener('click', function() {
+                const itemId = this.dataset.id;
+                const itemType = this.dataset.type;
+                const reporterUserId = this.dataset.reporterUserId;
+
+                itemDetailModal.classList.add('hidden'); 
+                if (itemType === 'found') { 
+                    openClaimItemModal(itemId); 
+                } else if (itemType === 'lost' && reporterUserId && reporterUserId == currentUser.userId) { 
+                    openResolveLostItemModal(itemId); 
+                }
+            });
+
+            function openClaimItemModal(foundItemId) { 
+                if(!claimItemModal || !claimFoundItemIdInput || !claimItemForm) return;
+                claimItemForm.reset();
+                clearClaimProofImageSelection(); 
+                claimFoundItemIdInput.value = foundItemId;
+                claimItemModal.classList.remove('hidden');
+            }
+            
+            function openResolveLostItemModal(lostItemId) {
+                if (!resolveLostItemModal || !resolveLostItemIdInput || !resolveLostItemForm || !resolveLostItemUserFullNameSpan) return;
+                resolveLostItemForm.reset();
+                clearResolveLostProofImageSelection();
+                resolveLostItemIdInput.value = lostItemId;
+                resolveLostItemUserFullNameSpan.textContent = currentUser.fullName;
+                resolveLostItemModal.classList.remove('hidden');
+            }
+
+            if(closeDetailModal) closeDetailModal.addEventListener('click', () => itemDetailModal.classList.add('hidden'));
+            if(closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', () => itemDetailModal.classList.add('hidden'));
+            
+            if(closeClaimItemModal) closeClaimItemModal.addEventListener('click', () => claimItemModal.classList.add('hidden'));
+            if(cancelClaimItemBtn) cancelClaimItemBtn.addEventListener('click', () => claimItemModal.classList.add('hidden'));
+
+            if(closeResolveLostItemModal) closeResolveLostItemModal.addEventListener('click', () => resolveLostItemModal.classList.add('hidden'));
+            if(cancelResolveLostItemBtn) cancelResolveLostItemBtn.addEventListener('click', () => resolveLostItemModal.classList.add('hidden'));
+
+
+            // --- Camera and File Handling for Claim Proof Image ---
+            if (claimProofImageFileInput) {
+                claimProofImageFileInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    handleImageFile(file, 'claimProof');
+                });
+            }
+            if (openClaimCameraBtn) {
+                openClaimCameraBtn.addEventListener('click', () => {
+                    currentImageTarget = 'claimProof'; 
+                    openSharedCamera();
+                });
+            }
+            // --- Camera and File Handling for Resolve Lost Proof Image ---
+            if (resolveLostProofImageFileInput) {
+                resolveLostProofImageFileInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    handleImageFile(file, 'resolveLostProof');
+                });
+            }
+            if (openResolveLostCameraBtn) {
+                openResolveLostCameraBtn.addEventListener('click', () => {
+                    currentImageTarget = 'resolveLostProof';
+                    openSharedCamera();
+                });
+            }
+
+
+            function handleImageFile(file, targetType) { 
+                let previewEl, previewContainerEl, base64VarSetter, formMessageEl, fileInputEl;
+                if (targetType === 'claimProof') {
+                    previewEl = claimProofImagePreview;
+                    previewContainerEl = claimProofImagePreviewContainer;
+                    base64VarSetter = (val) => { claimProofImageBase64 = val; };
+                    formMessageEl = claimFormMessage;
+                    fileInputEl = claimProofImageFileInput;
+                } else if (targetType === 'resolveLostProof') {
+                    previewEl = resolveLostProofImagePreview;
+                    previewContainerEl = resolveLostProofImagePreviewContainer;
+                    base64VarSetter = (val) => { resolveLostProofImageBase64 = val; };
+                    formMessageEl = resolveLostFormMessage;
+                    fileInputEl = resolveLostProofImageFileInput;
+                } else { return; }
+
+                if (file) {
+                    if (!file.type.startsWith('image/')) { showCustomFormMessage(formMessageEl, 'กรุณาเลือกไฟล์รูปภาพเท่านั้น', 'error'); clearImageSelectionByType(targetType, fileInputEl); return; }
+                    if (file.size > 5 * 1024 * 1024) { showCustomFormMessage(formMessageEl, 'ไฟล์รูปภาพต้องมีขนาดไม่เกิน 5MB', 'error'); clearImageSelectionByType(targetType, fileInputEl); return; }
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if(previewEl) previewEl.src = e.target.result;
+                        if(previewContainerEl) previewContainerEl.classList.remove('hidden');
+                        base64VarSetter(e.target.result);
+                    }
+                    reader.onerror = () => { showCustomFormMessage(formMessageEl, 'เกิดข้อผิดพลาดในการอ่านไฟล์', 'error'); base64VarSetter(null); }
+                    reader.readAsDataURL(file);
+                } else {
+                    clearImageSelectionByType(targetType, fileInputEl);
+                }
+            }
+            function clearImageSelectionByType(targetType, fileInputEl) {
+                if(fileInputEl) fileInputEl.value = ""; // Clear the file input
+                if (targetType === 'claimProof') {
+                    if(claimProofImagePreview) claimProofImagePreview.src = "#";
+                    if(claimProofImagePreviewContainer) claimProofImagePreviewContainer.classList.add('hidden');
+                    claimProofImageBase64 = null;
+                } else if (targetType === 'resolveLostProof') {
+                    if(resolveLostProofImagePreview) resolveLostProofImagePreview.src = "#";
+                    if(resolveLostProofImagePreviewContainer) resolveLostProofImagePreviewContainer.classList.add('hidden');
+                    resolveLostProofImageBase64 = null;
+                }
+            }
+            const clearClaimProofImageSelection = () => clearImageSelectionByType('claimProof', claimProofImageFileInput);
+            const clearResolveLostProofImageSelection = () => clearImageSelectionByType('resolveLostProof', resolveLostProofImageFileInput);
+
+
+            // Shared Camera Logic
+            async function openSharedCamera() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง'); return;
+                }
+                try {
+                    if(sharedCameraErrorMessage) sharedCameraErrorMessage.classList.add('hidden');
+                    sharedStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                    if(sharedCameraFeed) sharedCameraFeed.srcObject = sharedStream;
+                    if(sharedCameraModal) sharedCameraModal.classList.remove('hidden');
+                } catch (err) {
+                    console.warn("Could not get environment camera, trying user camera: ", err);
+                    try { 
+                        sharedStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        if(sharedCameraFeed) sharedCameraFeed.srcObject = sharedStream;
+                        if(sharedCameraModal) sharedCameraModal.classList.remove('hidden');
+                    } catch (err2) {
+                        console.error("Error accessing any camera: ", err2);
+                        if(sharedCameraErrorMessage) {
+                            sharedCameraErrorMessage.textContent = 'ไม่สามารถเข้าถึงกล้องได้: ' + err2.message;
+                            sharedCameraErrorMessage.classList.remove('hidden');
+                        }
+                    }
+                }
+            }
+            function stopSharedCameraStream() {
+                if (sharedStream) { sharedStream.getTracks().forEach(track => track.stop()); sharedStream = null; }
+                if(sharedCameraFeed) sharedCameraFeed.srcObject = null;
+                if(sharedCameraModal) sharedCameraModal.classList.add('hidden');
+            }
+            if(cancelSharedCameraButton) cancelSharedCameraButton.addEventListener('click', stopSharedCameraStream);
+            if(captureSharedImageButton) {
+                captureSharedImageButton.addEventListener('click', () => {
+                    if (!sharedCameraFeed || !sharedStream || sharedCameraFeed.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA || !sharedCameraFeed.videoWidth) {
+                         if(sharedCameraErrorMessage) {sharedCameraErrorMessage.textContent = 'กล้องยังไม่พร้อม'; sharedCameraErrorMessage.classList.remove('hidden');} return;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = sharedCameraFeed.videoWidth;
+                    canvas.height = sharedCameraFeed.videoHeight;
+                    canvas.getContext('2d').drawImage(sharedCameraFeed, 0, 0, canvas.width, canvas.height);
+                    const capturedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+                    
+                    if (currentImageTarget === 'claimProof') {
+                        claimProofImageBase64 = capturedBase64;
+                        if(claimProofImagePreview) claimProofImagePreview.src = capturedBase64;
+                        if(claimProofImagePreviewContainer) claimProofImagePreviewContainer.classList.remove('hidden');
+                        if(claimProofImageFileInput) claimProofImageFileInput.value = "";
+                    } else if (currentImageTarget === 'resolveLostProof') {
+                        resolveLostProofImageBase64 = capturedBase64;
+                        if(resolveLostProofImagePreview) resolveLostProofImagePreview.src = capturedBase64;
+                        if(resolveLostProofImagePreviewContainer) resolveLostProofImagePreviewContainer.classList.remove('hidden');
+                        if(resolveLostProofImageFileInput) resolveLostProofImageFileInput.value = "";
+                    }
+                    stopSharedCameraStream();
+                });
+            }
+
+
+            if(claimItemForm) {
+                claimItemForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const itemId = claimFoundItemIdInput.value;
+                    
+                    let payload = {
+                        foundItemId: itemId, 
+                        claimerFullName: document.getElementById('claimerFullName').value,
+                        actingUserId: currentUser.userId, 
+                        actingUserFullName: currentUser.fullName,
+                        returnNotes: document.getElementById('claimReturnNotes').value, 
+                        claimProofImageBase64: claimProofImageBase64 
+                    };
+                    
+                    if(!payload.claimerFullName){ 
+                        showCustomFormMessage(claimFormMessage, "กรุณากรอกชื่อผู้รับคืน", "error");
+                        return;
+                    }
+                    
+                    showButtonLoading(confirmClaimItemBtn, confirmClaimBtnText, confirmClaimSpinner, true);
+                    hideCustomFormMessage(claimFormMessage);
+
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: "claimFoundItem", payload: payload })
+                        });
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            showCustomFormMessage(claimFormMessage, "บันทึกการรับคืนของสำเร็จ!" + (result.claimProofImageUrl ? " รูปภาพถูกอัปโหลดแล้ว" : ""), "success");
+                            setTimeout(() => {
+                                claimItemModal.classList.add('hidden');
+                                fetchItems(); 
+                            }, 1500);
+                        } else {
+                            showCustomFormMessage(claimFormMessage, "เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถดำเนินการได้"), "error");
+                        }
+                    } catch (error) {
+                        console.error("Error processing claim item:", error);
+                        showCustomFormMessage(claimFormMessage, "เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
+                    } finally {
+                        showButtonLoading(confirmClaimItemBtn, confirmClaimBtnText, confirmClaimSpinner, false, 'ยืนยันการรับคืน');
+                    }
+                });
+            }
+
+            if(resolveLostItemForm) {
+                resolveLostItemForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const itemId = resolveLostItemIdInput.value;
+                    const notes = document.getElementById('resolveLostNotes').value;
+
+                    showButtonLoading(confirmResolveLostItemBtn, confirmResolveLostBtnText, confirmResolveLostSpinner, true);
+                    hideCustomFormMessage(resolveLostFormMessage);
+
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: "resolveLostItem", 
+                                payload: { 
+                                    lostItemId: itemId,
+                                    resolveNotes: notes, 
+                                    resolveProofImageBase64: resolveLostProofImageBase64, 
+                                    resolvedByUserId: currentUser.userId,
+                                    resolvedByFullName: currentUser.fullName
+                                 }
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            showCustomFormMessage(resolveLostFormMessage, "ยืนยันการเจอของและลบรายการสำเร็จ!" + (result.resolveProofImageUrl ? " รูปภาพถูกอัปโหลดแล้ว" : ""), "success");
+                             setTimeout(() => {
+                                resolveLostItemModal.classList.add('hidden');
+                                fetchItems(); 
+                            }, 1500);
+                        } else {
+                            showCustomFormMessage(resolveLostFormMessage, "เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถดำเนินการได้"), "error");
+                        }
+                    } catch (error) {
+                        console.error("Error resolving lost item:", error);
+                        showCustomFormMessage(resolveLostFormMessage, "เกิดข้อผิดพลาดในการเชื่อมต่อ", "error");
+                    } finally {
+                        showButtonLoading(confirmResolveLostItemBtn, confirmResolveLostBtnText, confirmResolveLostSpinner, false, 'ยืนยันและลบรายการ');
+                    }
+                });
+            }
+
+
+            async function fetchItems() {
+                showLoading(loadingMessage, itemsTableBody, noResultsMessage);
+                const selectedReportType = reportTypeFilter.value;
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getItems&type=${selectedReportType}`);
+                    const result = await response.json();
+                    if (result.status === "success" && result.items) {
+                        allFetchedItems = result.items.map(item => ({
+                            ...item,
+                            // Ensure reporterUserId is available for 'lost' items if it comes from a different column name in sheet
+                            // This assumes 'getItems' in Apps Script returns 'reporterUserId' for lost items
+                            reporterUserId: item.reportType === 'lost' ? item.reporterUserId : null 
+                        }));
+                        filterAndSearchItems(); 
+                    } else {
+                        noResultsMessage.textContent = "ไม่สามารถโหลดข้อมูลได้: " + (result.message || "ข้อผิดพลาดที่ไม่รู้จัก");
+                        noResultsMessage.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Fetch items error:", error);
+                    noResultsMessage.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อโหลดข้อมูล";
+                    noResultsMessage.classList.remove('hidden');
+                } finally {
+                    hideLoading(loadingMessage);
+                }
+            }
+
+            function filterAndSearchItems() {
+                const searchTerm = searchInput.value.toLowerCase();
+                let itemsToDisplay = allFetchedItems;
+
+                if (searchTerm) {
+                    itemsToDisplay = allFetchedItems.filter(item => 
+                        (item.itemType && item.itemType.toLowerCase().includes(searchTerm)) ||
+                        (item.description && item.description.toLowerCase().includes(searchTerm)) ||
+                        (item.location && item.location.toLowerCase().includes(searchTerm)) ||
+                        (item.reporterFullName && item.reporterFullName.toLowerCase().includes(searchTerm)) ||
+                        (item.itemId && item.itemId.toString().includes(searchTerm))
+                    );
+                }
+                renderItems(itemsToDisplay);
+            }
+
+            if(searchBtn) searchBtn.addEventListener('click', fetchItems); 
+            if(searchInput) searchInput.addEventListener('input', filterAndSearchItems); 
+            if(reportTypeFilter) reportTypeFilter.addEventListener('change', fetchItems); 
+
+            function showLoading(loader, tableBody, noResultsMsg) {
+                if(loader) loader.classList.remove('hidden');
+                if(tableBody) tableBody.innerHTML = '';
+                if(noResultsMsg) noResultsMsg.classList.add('hidden');
+            }
+            function hideLoading(loader) {
+                if(loader) loader.classList.add('hidden');
+            }
+            function showButtonLoading(button, textElement, spinnerElement, isLoading, defaultTextIfProvided) {
+                if (!button || !textElement || !spinnerElement) return;
+                button.disabled = isLoading;
+                const defaultText = defaultTextIfProvided || textElement.dataset.defaultText || textElement.textContent;
+                if (!textElement.dataset.defaultText) { 
+                     textElement.dataset.defaultText = textElement.textContent;
+                }
+
+                if (isLoading) {
+                    textElement.classList.add('hidden');
+                    spinnerElement.classList.remove('hidden');
+                } else {
+                    textElement.classList.remove('hidden');
+                    spinnerElement.classList.add('hidden');
+                    // textElement.textContent = defaultText; // This was causing button text to not reset if spinner was separate
+                }
+            }
+            function showCustomFormMessage(formMsgEl, message, type = "success") {
+                if (!formMsgEl) return;
+                formMsgEl.textContent = message;
+                formMsgEl.className = 'text-sm text-center mt-4 p-3 rounded-md'; 
+                if (type === "success") formMsgEl.classList.add('bg-green-100', 'text-green-700');
+                else formMsgEl.classList.add('bg-red-100', 'text-red-700');
+            }
+            function hideCustomFormMessage(formMsgEl){
+                 if (formMsgEl) formMsgEl.classList.add('hidden');
+            }
+
+            fetchItems(); 
+        });
+    </script>
+</body>
+</html>

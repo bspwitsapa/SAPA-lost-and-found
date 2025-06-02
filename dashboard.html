@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e8449;
+            --primary-dark: #145a32;
+            --primary-light: #82e0aa;
+            --secondary: #ffffff;
+        }
+        
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f0fdf4; 
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            transition: all 0.3s;
+        }
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        .card {
+            border-radius: 12px; 
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); 
+            transition: transform 0.3s, box-shadow 0.3s;
+            background-color: var(--secondary);
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+        }
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        .logout-btn-custom {
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem; 
+            transition: background-color 0.3s;
+        }
+        .logout-btn-custom:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .icon-bg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 4rem; 
+            width: 4rem; 
+            border-radius: 9999px; 
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 1rem; 
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ : ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">
+                    ออกจากระบบ
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="mainMenu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="card p-6 cursor-pointer text-center" id="foundItemBtn">
+                <div class="icon-bg bg-green-100 text-green-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">แจ้งเจอของ</h2>
+                <p class="text-gray-600">บันทึกข้อมูลของที่พบเจอและนำมาส่ง</p>
+            </div>
+            
+            <div class="card p-6 cursor-pointer text-center" id="lostItemBtn">
+                <div class="icon-bg bg-red-100 text-red-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">แจ้งของหาย</h2>
+                <p class="text-gray-600">แจ้งรายละเอียดของที่สูญหาย</p>
+            </div>
+            
+            <div class="card p-6 cursor-pointer text-center" id="viewItemsBtn">
+                <div class="icon-bg bg-blue-100 text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">รายการของทั้งหมด</h2>
+                <p class="text-gray-600">ดูรายการของที่พบและของหาย</p>
+            </div>
+            
+            <div id="adminPanel" class="card p-6 cursor-pointer text-center hidden">
+                <div class="icon-bg bg-purple-100 text-purple-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">จัดการระบบ</h2>
+                <p class="text-gray-600">จัดการผู้ใช้และข้อมูลในระบบ</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec'; // URL Updated! 
+            // This line is not needed here as this page doesn't make direct API calls with this constant. Auth is checked via localStorage.
+
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const userDisplayName = document.getElementById('userDisplayName');
+            const userRole = document.getElementById('userRole');
+            const adminPanel = document.getElementById('adminPanel');
+
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (userDisplayName) userDisplayName.textContent = currentUser.fullName;
+            if (userRole) userRole.textContent = `สถานะ : ${currentUser.role === 'admin' ? 'แอดมิน' : 'ผู้ใช้งาน'}`;
+            
+            if (adminPanel) {
+                if (currentUser.role === 'admin') {
+                    adminPanel.classList.remove('hidden');
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+            document.getElementById('foundItemBtn').addEventListener('click', function() {
+                window.location.href = 'found_item_form.html';
+            });
+            
+            document.getElementById('lostItemBtn').addEventListener('click', function() {
+                window.location.href = 'lost_item_form.html';
+            });
+            
+            document.getElementById('viewItemsBtn').addEventListener('click', function() {
+                window.location.href = 'items_list.html';
+            });
+            
+            if (adminPanel) {
+                adminPanel.addEventListener('click', function() {
+                    if (currentUser.role === 'admin') {
+                        window.location.href = 'admin_panel.html';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
