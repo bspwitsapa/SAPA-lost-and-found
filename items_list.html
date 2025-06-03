@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAPA Lost and Found - รายการของทั้งหมด</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="code.gs"></script>
     <link rel="icon" type="image/png" href="sapa.png" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -22,17 +21,16 @@
         .table th { background-color: #E6FFFA; }
         .modal-content { max-height: 90vh; }
         .status-badge { display: inline-flex; padding: 0.25rem 0.75rem; font-size: 0.75rem; line-height: 1rem; font-weight: 600; border-radius: 9999px; }
-        .status-badge.found { background-color: #d1fae5; color: #065f46; }
-        .status-badge.lost { background-color: #fee2e2; color: #991b1b; }
-        .status-badge.claimed, .status-badge.returned, .status-badge.resolved { background-color: #dbeafe; color: #1e40af; }
-        .status-badge.default { background-color: #e5e7eb; color: #374151; }
+        .status-badge.found { background-color: #d1fae5; color: #065f46; } 
+        .status-badge.lost { background-color: #fee2e2; color: #991b1b; } 
+        .status-badge.claimed, .status-badge.returned, .status-badge.resolved { background-color: #dbeafe; color: #1e40af; } 
+        .status-badge.default { background-color: #e5e7eb; color: #374151; } 
         .detail-modal-image { max-height: 20rem; width: auto; margin: 0 auto; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
         .image-preview-container { width: 100%; max-width: 200px; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; overflow: hidden; }
         .image-preview { width: 100%; height: auto; display: block; }
         .camera-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1050; }
         .camera-modal-content { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 90%; width: 500px; }
         #sharedCameraFeed { width: 100%; max-width: 400px; height: auto; border: 1px solid #ccc; margin-bottom: 15px; border-radius: 4px; background-color: #333; }
-        .table-item-image { /* สามารถเพิ่มสไตล์เพิ่มเติมสำหรับรูปภาพในตารางที่นี่ได้ */ }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -65,7 +63,7 @@
                 </button>
                 รายการของทั้งหมด
             </h2>
-
+            
             <div class="mb-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div class="flex-grow">
@@ -81,7 +79,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 table">
                     <thead class="bg-gray-50">
@@ -89,8 +87,8 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทรายงาน</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ประเภทของ</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียด</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานที่</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่แจ้งเข้าระบบ</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รูปภาพ</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
                         </tr>
@@ -212,7 +210,7 @@
             </div>
         </div>
     </div>
-
+    
     <div id="sharedCameraModal" class="camera-modal-overlay hidden">
         <div class="camera-modal-content">
             <h3 class="text-xl font-semibold mb-4">ถ่ายรูปภาพหลักฐาน</h3>
@@ -249,16 +247,16 @@
                 window.location.href = 'dashboard.html';
             });
 
-            let allFetchedItems = [];
+            let allFetchedItems = []; 
             const itemsTableBody = document.getElementById('itemsTableBody');
             const itemDetailModal = document.getElementById('itemDetailModal');
             const closeDetailModal = document.getElementById('closeDetailModal');
             const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
             const modalDetailContent = document.getElementById('modalDetailContent');
             const actionFromDetailBtn = document.getElementById('actionFromDetailBtn');
-
+            
             // Claim Item Modal Elements
-            const claimItemModal = document.getElementById('claimItemModal');
+            const claimItemModal = document.getElementById('claimItemModal'); 
             const closeClaimItemModal = document.getElementById('closeClaimItemModal');
             const cancelClaimItemBtn = document.getElementById('cancelClaimItemBtn');
             const claimItemForm = document.getElementById('claimItemForm');
@@ -308,7 +306,7 @@
 
             function getStatusBadge(status, reportType) {
                 let badgeClass = 'status-badge default';
-                let statusText = status;
+                let statusText = status; 
                 if (reportType === 'found') {
                     if (status === 'awaiting_claim') { badgeClass = 'status-badge found'; statusText = 'รอรับคืน';}
                 } else if (reportType === 'lost') {
@@ -316,10 +314,10 @@
                 }
                 return `<span class="${badgeClass}">${statusText}</span>`;
             }
-
+            
             function renderItems(itemsToRender) {
                 if(!itemsTableBody || !noResultsMessage) return;
-                itemsTableBody.innerHTML = '';
+                itemsTableBody.innerHTML = ''; 
                 if (itemsToRender.length === 0) {
                     noResultsMessage.classList.remove('hidden');
                     return;
@@ -329,30 +327,22 @@
                 itemsToRender.forEach(item => {
                     const row = itemsTableBody.insertRow();
                     let actionButtonsHTML = `<button class="view-detail-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="${item.itemId}" data-type="${item.reportType}">ดูรายละเอียด</button>`;
-
-                    if (item.reportType === 'found') {
+                    
+                    if (item.reportType === 'found') { 
                         actionButtonsHTML += `<button class="claim-item-btn text-blue-600 hover:text-blue-900" data-id="${item.itemId}">บันทึกการรับคืน</button>`;
                     }
                     if (item.reportType === 'lost' && item.reporterUserId && item.reporterUserId == currentUser.userId) {
                         actionButtonsHTML += `<button class="resolve-lost-btn text-green-600 hover:text-green-900" data-id="${item.itemId}">ฉันเจอของแล้ว</button>`;
                     }
 
-                    // Log the imageUrl for debugging
-                    // console.log("Rendering Item ID:", item.itemId, "Image URL:", item.imageUrl);
-
-                    let imageHtml = '<span class="text-xs text-gray-500">ไม่มีรูป</span>';
-                    if (item.imageUrl) {
-                        imageHtml = `<img src="${item.imageUrl}" alt="${item.itemType || 'Item Image'}" class="h-12 w-12 object-cover rounded border border-gray-200 table-item-image" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-xs text-gray-500\\'>ไม่สามารถโหลดรูปภาพได้</span>';">`;
-                    }
-
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium ${item.reportType === 'lost' ? 'text-red-600' : 'text-green-600'}">${item.reportType === 'lost' ? 'แจ้งหาย' : 'แจ้งพบ'}</div></td>
                         <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${item.itemType || '-'}</div></td>
                         <td class="px-6 py-4"><div class="text-sm text-gray-900 truncate max-w-xs" title="${item.description || ''}">${item.description || '-'}</div></td>
+                        <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">${item.location || '-'}</div></td>
                         <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm text-gray-900">${item.dateReportedSystem || '-'}</div></td>
-                        <td class="px-6 py-4 whitespace-nowrap align-middle">${imageHtml}</td>
-                        <td class="px-6 py-4 whitespace-nowrap align-middle">${getStatusBadge(item.status, item.reportType)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
+                        <td class="px-6 py-4 whitespace-nowrap">${getStatusBadge(item.status, item.reportType)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             ${actionButtonsHTML}
                         </td>
                     `;
@@ -364,7 +354,7 @@
                 document.querySelectorAll('.view-detail-btn').forEach(btn => {
                     btn.addEventListener('click', async function() {
                         const itemId = this.dataset.id;
-                        const itemType = this.dataset.type;
+                        const itemType = this.dataset.type; 
                         try {
                             showLoading(loadingMessage);
                             const response = await fetch(`${APPS_SCRIPT_URL}?action=getItemDetails&itemId=${itemId}&itemType=${itemType}`);
@@ -392,16 +382,14 @@
                 document.querySelectorAll('.resolve-lost-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const itemId = this.dataset.id;
-                        openResolveLostItemModal(itemId);
+                        openResolveLostItemModal(itemId); 
                     });
                 });
             }
-
+            
             function showItemDetailModal(item) {
                 if (!item || !modalDetailContent || !itemDetailModal || !actionFromDetailBtn) return;
-                 // Log the imageUrl for the detail modal as well
-                // console.log("Detail Modal Item ID:", (item.reportType === 'found' ? item.foundItemId : item.lostItemId), "Image URL:", item.imageUrl);
-
+                
                 let detailsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">`;
                 detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">รหัสรายการ</h4><p class="text-gray-900 text-lg">${item.reportType === 'found' ? item.foundItemId : item.lostItemId}</p></div>`;
                 detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ประเภทรายงาน</h4><p class="text-gray-900 text-lg">${item.reportType === 'found' ? 'แจ้งพบ' : 'แจ้งหาย'}</p></div>`;
@@ -413,15 +401,15 @@
                 detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">วันที่${item.reportType === 'found' ? 'พบ' : 'ทำหาย'}</h4><p class="text-gray-900">${item.reportType === 'found' ? (item.dateFound || '-') : (item.dateLost || '-')}</p></div>`;
                 detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">วันที่แจ้งเข้าระบบ</h4><p class="text-gray-900">${item.dateReported || '-'}</p></div>`;
                 detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สถานะ</h4>${getStatusBadge(item.status, item.reportType)}</div>`;
-
+                
                 if (item.reportType === 'found') {
                     detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ผู้แจ้งพบ</h4><p class="text-gray-900">${item.finderFullName || '-'}</p></div>`;
                     if (item.finderContactPhone) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">เบอร์ติดต่อผู้แจ้งพบ</h4><p class="text-gray-900">${item.finderContactPhone}</p></div>`;
-                    if (item.imageUrl) {
+                    if (item.imageUrl) { 
                         detailsHtml += `<div class="md:col-span-2"><h4 class="text-sm font-medium text-gray-500 mb-1">รูปภาพ</h4><img src="${item.imageUrl}" alt="${item.itemType || 'Item Image'}" class="detail-modal-image" onerror="this.style.display='none'; const p = document.createElement('p'); p.textContent='ไม่สามารถโหลดรูปภาพได้'; this.parentNode.appendChild(p);"></div>`;
                     }
                     if (item.currentHoldingLocation) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">สถานที่เก็บปัจจุบัน</h4><p class="text-gray-900">${item.currentHoldingLocation}</p></div>`;
-                } else {
+                } else { 
                     detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterFullName || '-'}</p></div>`;
                     if (item.reporterContactPhone) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">เบอร์ติดต่อผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterContactPhone}</p></div>`;
                      if (item.reporterGrade) detailsHtml += `<div><h4 class="text-sm font-medium text-gray-500 mb-1">ระดับชั้นผู้แจ้งหาย</h4><p class="text-gray-900">${item.reporterGrade}</p></div>`;
@@ -434,7 +422,7 @@
                 actionFromDetailBtn.dataset.type = item.reportType;
                 actionFromDetailBtn.dataset.reporterUserId = item.reporterUserId || '';
 
-                if (item.reportType === 'found') {
+                if (item.reportType === 'found') { 
                     actionFromDetailBtn.textContent = "บันทึกการรับคืน";
                     actionFromDetailBtn.classList.remove('hidden');
                 } else if (item.reportType === 'lost' && item.reporterUserId && item.reporterUserId == currentUser.userId) {
@@ -451,22 +439,22 @@
                 const itemType = this.dataset.type;
                 const reporterUserId = this.dataset.reporterUserId;
 
-                itemDetailModal.classList.add('hidden');
-                if (itemType === 'found') {
-                    openClaimItemModal(itemId);
-                } else if (itemType === 'lost' && reporterUserId && reporterUserId == currentUser.userId) {
-                    openResolveLostItemModal(itemId);
+                itemDetailModal.classList.add('hidden'); 
+                if (itemType === 'found') { 
+                    openClaimItemModal(itemId); 
+                } else if (itemType === 'lost' && reporterUserId && reporterUserId == currentUser.userId) { 
+                    openResolveLostItemModal(itemId); 
                 }
             });
 
-            function openClaimItemModal(foundItemId) {
+            function openClaimItemModal(foundItemId) { 
                 if(!claimItemModal || !claimFoundItemIdInput || !claimItemForm) return;
                 claimItemForm.reset();
-                clearClaimProofImageSelection();
+                clearClaimProofImageSelection(); 
                 claimFoundItemIdInput.value = foundItemId;
                 claimItemModal.classList.remove('hidden');
             }
-
+            
             function openResolveLostItemModal(lostItemId) {
                 if (!resolveLostItemModal || !resolveLostItemIdInput || !resolveLostItemForm || !resolveLostItemUserFullNameSpan) return;
                 resolveLostItemForm.reset();
@@ -478,7 +466,7 @@
 
             if(closeDetailModal) closeDetailModal.addEventListener('click', () => itemDetailModal.classList.add('hidden'));
             if(closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', () => itemDetailModal.classList.add('hidden'));
-
+            
             if(closeClaimItemModal) closeClaimItemModal.addEventListener('click', () => claimItemModal.classList.add('hidden'));
             if(cancelClaimItemBtn) cancelClaimItemBtn.addEventListener('click', () => claimItemModal.classList.add('hidden'));
 
@@ -495,7 +483,7 @@
             }
             if (openClaimCameraBtn) {
                 openClaimCameraBtn.addEventListener('click', () => {
-                    currentImageTarget = 'claimProof';
+                    currentImageTarget = 'claimProof'; 
                     openSharedCamera();
                 });
             }
@@ -514,7 +502,7 @@
             }
 
 
-            function handleImageFile(file, targetType) {
+            function handleImageFile(file, targetType) { 
                 let previewEl, previewContainerEl, base64VarSetter, formMessageEl, fileInputEl;
                 if (targetType === 'claimProof') {
                     previewEl = claimProofImagePreview;
@@ -564,96 +552,57 @@
             // Shared Camera Logic
             async function openSharedCamera() {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    if(sharedCameraErrorMessage) {
-                        sharedCameraErrorMessage.textContent = 'เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง';
-                        sharedCameraErrorMessage.classList.remove('hidden');
-                    }
                     alert('เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง'); return;
                 }
                 try {
                     if(sharedCameraErrorMessage) sharedCameraErrorMessage.classList.add('hidden');
-                    console.log("Attempting to get user media (environment)...");
                     sharedStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                     if(sharedCameraFeed) sharedCameraFeed.srcObject = sharedStream;
                     if(sharedCameraModal) sharedCameraModal.classList.remove('hidden');
-                    console.log("Environment camera stream acquired.");
                 } catch (err) {
                     console.warn("Could not get environment camera, trying user camera: ", err);
-                    try {
-                        console.log("Attempting to get user media (user/default)...");
+                    try { 
                         sharedStream = await navigator.mediaDevices.getUserMedia({ video: true });
                         if(sharedCameraFeed) sharedCameraFeed.srcObject = sharedStream;
                         if(sharedCameraModal) sharedCameraModal.classList.remove('hidden');
-                        console.log("User/default camera stream acquired.");
                     } catch (err2) {
                         console.error("Error accessing any camera: ", err2);
                         if(sharedCameraErrorMessage) {
-                            sharedCameraErrorMessage.textContent = 'ไม่สามารถเข้าถึงกล้องได้: ' + err2.message + '. โปรดตรวจสอบการอนุญาตใช้กล้องในเบราว์เซอร์';
+                            sharedCameraErrorMessage.textContent = 'ไม่สามารถเข้าถึงกล้องได้: ' + err2.message;
                             sharedCameraErrorMessage.classList.remove('hidden');
                         }
-                        // Keep the modal open but show error, or decide to close it.
-                        // For "ค้างหน้าถ่ายรูป" we might want to keep it open.
-                        // sharedCameraModal.classList.add('hidden'); // Optionally hide if camera fails completely
                     }
                 }
             }
-
-            // Modified function: Does not stop the camera stream or hide the modal
-            function stopSharedCameraStream_modifiedToStayOpen() {
-                // We don't stop the stream or hide the modal to keep it "stuck"
-                console.log("Shared camera modal action performed, but modal remains open as requested.");
-                // If you still want to stop the stream but keep modal:
-                // if (sharedStream) { sharedStream.getTracks().forEach(track => track.stop()); sharedStream = null; }
-                // if(sharedCameraFeed) sharedCameraFeed.srcObject = null;
+            function stopSharedCameraStream() {
+                if (sharedStream) { sharedStream.getTracks().forEach(track => track.stop()); sharedStream = null; }
+                if(sharedCameraFeed) sharedCameraFeed.srcObject = null;
+                if(sharedCameraModal) sharedCameraModal.classList.add('hidden');
             }
-
-            if(cancelSharedCameraButton) {
-                cancelSharedCameraButton.addEventListener('click', () => {
-                    console.log("Cancel shared camera button clicked - modal will stay open.");
-                    // Original action: stopSharedCameraStream();
-                    // To make it "stuck", we don't call stopSharedCameraStream() or hide the modal.
-                    // If you want to stop the stream but keep the modal:
-                    // if (sharedStream) { sharedStream.getTracks().forEach(track => track.stop()); sharedStream = null; }
-                    // if(sharedCameraFeed) sharedCameraFeed.srcObject = null;
-                    // if(sharedCameraModal) sharedCameraModal.classList.remove('hidden'); // Ensure it stays visible
-                });
-            }
-
+            if(cancelSharedCameraButton) cancelSharedCameraButton.addEventListener('click', stopSharedCameraStream);
             if(captureSharedImageButton) {
                 captureSharedImageButton.addEventListener('click', () => {
-                    console.log("Capture image button clicked - modal will stay open.");
                     if (!sharedCameraFeed || !sharedStream || sharedCameraFeed.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA || !sharedCameraFeed.videoWidth) {
-                         if(sharedCameraErrorMessage) {
-                            sharedCameraErrorMessage.textContent = 'กล้องยังไม่พร้อมสำหรับการถ่ายภาพ';
-                            sharedCameraErrorMessage.classList.remove('hidden');
-                         }
-                         return;
+                         if(sharedCameraErrorMessage) {sharedCameraErrorMessage.textContent = 'กล้องยังไม่พร้อม'; sharedCameraErrorMessage.classList.remove('hidden');} return;
                     }
                     const canvas = document.createElement('canvas');
                     canvas.width = sharedCameraFeed.videoWidth;
                     canvas.height = sharedCameraFeed.videoHeight;
                     canvas.getContext('2d').drawImage(sharedCameraFeed, 0, 0, canvas.width, canvas.height);
                     const capturedBase64 = canvas.toDataURL('image/jpeg', 0.9);
-
+                    
                     if (currentImageTarget === 'claimProof') {
                         claimProofImageBase64 = capturedBase64;
                         if(claimProofImagePreview) claimProofImagePreview.src = capturedBase64;
                         if(claimProofImagePreviewContainer) claimProofImagePreviewContainer.classList.remove('hidden');
                         if(claimProofImageFileInput) claimProofImageFileInput.value = "";
-                        console.log("Image captured for claim proof.");
                     } else if (currentImageTarget === 'resolveLostProof') {
                         resolveLostProofImageBase64 = capturedBase64;
                         if(resolveLostProofImagePreview) resolveLostProofImagePreview.src = capturedBase64;
                         if(resolveLostProofImagePreviewContainer) resolveLostProofImagePreviewContainer.classList.remove('hidden');
                         if(resolveLostProofImageFileInput) resolveLostProofImageFileInput.value = "";
-                        console.log("Image captured for resolve lost proof.");
                     }
-                    // Original action: stopSharedCameraStream();
-                    // To make it "stuck", we don't call stopSharedCameraStream() or hide the modal.
-                    // If you want to stop the stream but keep the modal:
-                    // if (sharedStream) { sharedStream.getTracks().forEach(track => track.stop()); sharedStream = null; }
-                    // if(sharedCameraFeed) sharedCameraFeed.srcObject = null;
-                    // if(sharedCameraModal) sharedCameraModal.classList.remove('hidden'); // Ensure it stays visible
+                    stopSharedCameraStream();
                 });
             }
 
@@ -662,21 +611,21 @@
                 claimItemForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     const itemId = claimFoundItemIdInput.value;
-
+                    
                     let payload = {
-                        foundItemId: itemId,
+                        foundItemId: itemId, 
                         claimerFullName: document.getElementById('claimerFullName').value,
-                        actingUserId: currentUser.userId,
+                        actingUserId: currentUser.userId, 
                         actingUserFullName: currentUser.fullName,
-                        returnNotes: document.getElementById('claimReturnNotes').value,
-                        claimProofImageBase64: claimProofImageBase64
+                        returnNotes: document.getElementById('claimReturnNotes').value, 
+                        claimProofImageBase64: claimProofImageBase64 
                     };
-
-                    if(!payload.claimerFullName){
+                    
+                    if(!payload.claimerFullName){ 
                         showCustomFormMessage(claimFormMessage, "กรุณากรอกชื่อผู้รับคืน", "error");
                         return;
                     }
-
+                    
                     showButtonLoading(confirmClaimItemBtn, confirmClaimBtnText, confirmClaimSpinner, true);
                     hideCustomFormMessage(claimFormMessage);
 
@@ -691,7 +640,7 @@
                             showCustomFormMessage(claimFormMessage, "บันทึกการรับคืนของสำเร็จ!" + (result.claimProofImageUrl ? " รูปภาพถูกอัปโหลดแล้ว" : ""), "success");
                             setTimeout(() => {
                                 claimItemModal.classList.add('hidden');
-                                fetchItems();
+                                fetchItems(); 
                             }, 1500);
                         } else {
                             showCustomFormMessage(claimFormMessage, "เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถดำเนินการได้"), "error");
@@ -719,11 +668,11 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                             body: JSON.stringify({
-                                action: "resolveLostItem",
-                                payload: {
+                                action: "resolveLostItem", 
+                                payload: { 
                                     lostItemId: itemId,
-                                    resolveNotes: notes,
-                                    resolveProofImageBase64: resolveLostProofImageBase64,
+                                    resolveNotes: notes, 
+                                    resolveProofImageBase64: resolveLostProofImageBase64, 
                                     resolvedByUserId: currentUser.userId,
                                     resolvedByFullName: currentUser.fullName
                                  }
@@ -734,7 +683,7 @@
                             showCustomFormMessage(resolveLostFormMessage, "ยืนยันการเจอของและลบรายการสำเร็จ!" + (result.resolveProofImageUrl ? " รูปภาพถูกอัปโหลดแล้ว" : ""), "success");
                              setTimeout(() => {
                                 resolveLostItemModal.classList.add('hidden');
-                                fetchItems();
+                                fetchItems(); 
                             }, 1500);
                         } else {
                             showCustomFormMessage(resolveLostFormMessage, "เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถดำเนินการได้"), "error");
@@ -758,9 +707,11 @@
                     if (result.status === "success" && result.items) {
                         allFetchedItems = result.items.map(item => ({
                             ...item,
-                            reporterUserId: item.reportType === 'lost' ? item.reporterUserId : null
+                            // Ensure reporterUserId is available for 'lost' items if it comes from a different column name in sheet
+                            // This assumes 'getItems' in Apps Script returns 'reporterUserId' for lost items
+                            reporterUserId: item.reportType === 'lost' ? item.reporterUserId : null 
                         }));
-                        filterAndSearchItems();
+                        filterAndSearchItems(); 
                     } else {
                         noResultsMessage.textContent = "ไม่สามารถโหลดข้อมูลได้: " + (result.message || "ข้อผิดพลาดที่ไม่รู้จัก");
                         noResultsMessage.classList.remove('hidden');
@@ -779,7 +730,7 @@
                 let itemsToDisplay = allFetchedItems;
 
                 if (searchTerm) {
-                    itemsToDisplay = allFetchedItems.filter(item =>
+                    itemsToDisplay = allFetchedItems.filter(item => 
                         (item.itemType && item.itemType.toLowerCase().includes(searchTerm)) ||
                         (item.description && item.description.toLowerCase().includes(searchTerm)) ||
                         (item.location && item.location.toLowerCase().includes(searchTerm)) ||
@@ -790,9 +741,9 @@
                 renderItems(itemsToDisplay);
             }
 
-            if(searchBtn) searchBtn.addEventListener('click', fetchItems);
-            if(searchInput) searchInput.addEventListener('input', filterAndSearchItems);
-            if(reportTypeFilter) reportTypeFilter.addEventListener('change', fetchItems);
+            if(searchBtn) searchBtn.addEventListener('click', fetchItems); 
+            if(searchInput) searchInput.addEventListener('input', filterAndSearchItems); 
+            if(reportTypeFilter) reportTypeFilter.addEventListener('change', fetchItems); 
 
             function showLoading(loader, tableBody, noResultsMsg) {
                 if(loader) loader.classList.remove('hidden');
@@ -806,7 +757,7 @@
                 if (!button || !textElement || !spinnerElement) return;
                 button.disabled = isLoading;
                 const defaultText = defaultTextIfProvided || textElement.dataset.defaultText || textElement.textContent;
-                if (!textElement.dataset.defaultText) {
+                if (!textElement.dataset.defaultText) { 
                      textElement.dataset.defaultText = textElement.textContent;
                 }
 
@@ -816,12 +767,13 @@
                 } else {
                     textElement.classList.remove('hidden');
                     spinnerElement.classList.add('hidden');
+                    // textElement.textContent = defaultText; // This was causing button text to not reset if spinner was separate
                 }
             }
             function showCustomFormMessage(formMsgEl, message, type = "success") {
                 if (!formMsgEl) return;
                 formMsgEl.textContent = message;
-                formMsgEl.className = 'text-sm text-center mt-4 p-3 rounded-md';
+                formMsgEl.className = 'text-sm text-center mt-4 p-3 rounded-md'; 
                 if (type === "success") formMsgEl.classList.add('bg-green-100', 'text-green-700');
                 else formMsgEl.classList.add('bg-red-100', 'text-red-700');
             }
@@ -829,7 +781,7 @@
                  if (formMsgEl) formMsgEl.classList.add('hidden');
             }
 
-            fetchItems();
+            fetchItems(); 
         });
     </script>
 </body>
