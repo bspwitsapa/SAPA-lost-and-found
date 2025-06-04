@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAPA Lost and Found - แจ้งเจอของ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="code.gs"></script>
     <link rel="icon" type="image/png" href="sapa.png" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -97,17 +98,7 @@
             <form id="foundItemActualForm" class="space-y-6">
                 <div>
                     <label for="itemType" class="block text-sm font-medium text-gray-700 mb-1">ประเภทของ <span class="text-red-500">*</span></label>
-                    <select id="itemType" name="itemType" class="form-select w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" required>
-                        <option value="">-- เลือกประเภท --</option>
-                        <option value="โทรศัพท์มือถือ">โทรศัพท์มือถือ</option>
-                        <option value="กระเป๋าสตางค์">กระเป๋าสตางค์</option>
-                        <option value="กระเป๋า">กระเป๋า</option>
-                        <option value="เงิน">เงิน</option>
-                        <option value="บัตรนักเรียน">บัตรนักเรียน</option>
-                        <option value="อุปกรณ์การเรียน">อุปกรณ์การเรียน</option>
-                        <option value="กุญแจ">กุญแจ</option>
-                        <option value="อื่นๆ">อื่นๆ</option>
-                    </select>
+                    <input type="text" id="itemType" name="itemType" class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" placeholder="ระบุประเภทของ เช่น โทรศัพท์, กระเป๋า, หนังสือ" required>
                 </div>
                 <div>
                     <label for="itemNameOrBrand" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ/ยี่ห้อของ (ถ้ามี)</label>
@@ -347,7 +338,7 @@
                         finderUserId: currentUser.userId,
                         finderFullName: currentUser.fullName,
                         finderContactPhone: formData.get('finderContactPhone'),
-                        itemType: formData.get('itemType'),
+                        itemType: formData.get('itemType'), // This will get value from text input
                         itemNameOrBrand: formData.get('itemNameOrBrand'),
                         itemColor: formData.get('itemColor'),
                         itemDescription: formData.get('itemDescription'),
@@ -373,7 +364,7 @@
                             method: 'POST',
                             headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
                             body: JSON.stringify({
-                                action: "addFoundItemWithImageUpload", // Ensure this matches your Apps Script function name
+                                action: "addFoundItemWithImageUpload", 
                                 payload: itemData 
                             })
                         });
