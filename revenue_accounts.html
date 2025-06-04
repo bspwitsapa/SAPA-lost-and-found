@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - บัญชีการเงินสภานักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="sapa.png" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { 
+            --primary: #1e8449; 
+            --primary-dark: #145a32; 
+            --primary-light: #82e0aa; 
+            --secondary: #ffffff; 
+            --danger: #dc3545; /* Added for delete buttons */
+            --danger-dark: #c82333; /* Added for delete buttons hover */
+        }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f0fdf4; 
+        }
+        .btn-primary { 
+            background-color: var(--primary); 
+            color: white; 
+            transition: all 0.3s; 
+            padding: 0.5rem 1rem; /* Standardized padding */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+        }
+        .btn-primary:hover { 
+            background-color: var(--primary-dark); 
+        }
+        .btn-outline { 
+            border: 2px solid var(--primary); 
+            color: var(--primary); 
+            background-color: transparent;
+            transition: all 0.3s; 
+            padding: 0.5rem 1rem; /* Standardized padding */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+        }
+        .btn-outline:hover { 
+            background-color: var(--primary); 
+            color: white; 
+        }
+        .btn-danger { /* Added for delete buttons */
+            background-color: var(--danger);
+            color: white;
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+        }
+        .btn-danger:hover {
+            background-color: var(--danger-dark);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { /* Added .form-textarea */
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); 
+            outline:none;
+        }
+        .header-gradient { 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); 
+        }
+        .logout-btn-custom { 
+            background-color: rgba(255,255,255,0.1); 
+            border: 1px solid rgba(255,255,255,0.5); 
+            color: white; 
+            padding: 0.5rem 1rem; 
+            border-radius: 0.375rem; 
+            transition: background-color 0.3s; 
+        }
+        .logout-btn-custom:hover { 
+            background-color: rgba(255,255,255,0.2); 
+        }
+        .table th { 
+            background-color: #E6FFFA; /* SAPA's table header style */
+            padding: 0.75rem 1rem; /* Tailwind px-4 py-3 equivalent */
+            text-align: left;
+            font-size: 0.75rem; /* Tailwind text-xs */
+            font-weight: 500; /* Tailwind font-medium */
+            color: #4A5568; /* Tailwind text-gray-700 or similar for headers */
+            text-transform: uppercase;
+            letter-spacing: 0.05em; /* Tailwind tracking-wider */
+        }
+        .table td {
+            padding: 0.75rem 1rem; /* Tailwind px-4 py-3 equivalent */
+            border-bottom-width: 1px;
+            border-color: #E2E8F0; /* Tailwind divide-gray-200 */
+        }
+        .modal-content { 
+            max-height: 90vh; 
+        }
+        .income-text { color: #16a34a; } /* Tailwind green-600 */
+        .expense-text { color: #dc2626; } /* Tailwind red-600 */
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ: ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">ออกจากระบบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-xl shadow-xl p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 flex items-center">
+                    <button id="backToDashboardBtn" class="mr-3 text-green-600 hover:text-green-800 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    บัญชีการเงินสภานักเรียน
+                </h2>
+                <div id="currentBalanceHeader" class="mt-2 sm:mt-0 text-lg sm:text-xl font-bold text-green-700">ยอดคงเหลือ: ฿0.00</div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-green-500">
+                    <h3 class="text-gray-600 text-base mb-1">รายรับทั้งหมด</h3>
+                    <p id="total-income" class="text-3xl font-bold income-text">฿0.00</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-red-500">
+                    <h3 class="text-gray-600 text-base mb-1">รายจ่ายทั้งหมด</h3>
+                    <p id="total-expense" class="text-3xl font-bold expense-text">฿0.00</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-5 border-l-4 border-blue-500">
+                    <h3 class="text-gray-600 text-base mb-1">ยอดคงเหลือปัจจุบัน</h3>
+                    <p id="balance" class="text-3xl font-bold text-blue-600">฿0.00</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-xl font-semibold text-gray-700 mb-6">เพิ่มรายการใหม่</h3>
+                <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">วันที่ <span class="text-red-500">*</span></label>
+                        <input type="date" id="date" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" required>
+                    </div>
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">รายการ <span class="text-red-500">*</span></label>
+                        <input type="text" id="description" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" placeholder="ระบุรายการ" required>
+                    </div>
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">ประเภท <span class="text-red-500">*</span></label>
+                        <select id="type" class="form-select w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" required>
+                            <option value="">เลือกประเภท</option>
+                            <option value="income">รายรับ</option>
+                            <option value="expense">รายจ่าย</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">จำนวนเงิน <span class="text-red-500">*</span></label>
+                        <input type="number" id="amount" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" placeholder="0.00" min="0" step="0.01" required>
+                    </div>
+                    <div>
+                        <label for="department" class="block text-sm font-medium text-gray-700 mb-1">ฝ่ายที่เบิก/รับเงิน</label>
+                        <input type="text" id="department" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" placeholder="ระบุฝ่าย (ถ้ามี)">
+                    </div>
+                    <div>
+                        <label for="note" class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+                        <input type="text" id="note" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none" placeholder="หมายเหตุ (ถ้ามี)">
+                    </div>
+                    <div class="md:col-span-2 lg:col-span-3 flex justify-end items-center mt-4">
+                        <button type="button" id="clear-form" class="btn-outline mr-3">ล้างข้อมูล</button>
+                        <button type="submit" class="btn-primary">บันทึกรายการ</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-700">ประวัติรายการทั้งหมด</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table">
+                        <thead>
+                            <tr>
+                                <th>ลำดับที่</th>
+                                <th>วันที่</th>
+                                <th>รายการ</th>
+                                <th>ประเภท</th>
+                                <th class="text-right">จำนวนเงิน</th>
+                                <th class="text-right">เงินคงเหลือ</th>
+                                <th>ฝ่ายที่เบิก/รับเงิน</th>
+                                <th>หมายเหตุ</th>
+                                <th class="text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table" class="divide-y divide-gray-200">
+                            <tr class="text-gray-500 text-center">
+                                <td colspan="9" class="py-10">ไม่พบรายการ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="delete-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b">
+                    <h3 class="text-2xl font-bold text-gray-800">ยืนยันการลบรายการ</h3>
+                    <button id="closeDeleteModalBtn" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <p class="text-gray-700 mb-6">คุณต้องการลบรายการนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>
+                <div class="border-t pt-4 mt-6">
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-delete" class="btn-outline">ยกเลิก</button>
+                        <button type="button" id="confirm-delete" class="btn-danger">ลบรายการ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxt3ooKse_DmONcIxRVaYfuU-TlvzuIMNI_0-g4fXRtf3iMuHrKJj-VEb3mmMEqBFn0wQ/exec';
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser')); // Authentication ยังใช้ localStorage เหมือนเดิม
+            const userDisplayNameEl = document.getElementById('userDisplayName');
+            const userRoleEl = document.getElementById('userRole');
+
+            // Authenticate and Authorize (Admin Only for this page)
+            if (!currentUser) {
+                alert('กรุณาเข้าสู่ระบบ');
+                window.location.href = 'index.html'; // หรือหน้าที่ใช้ login
+                return;
+            }
+            if (currentUser.role !== 'admin') {
+                alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+                window.location.href = 'dashboard.html'; // หรือหน้าที่หลักหลัง login
+                return;
+            }
+
+            if(userDisplayNameEl) userDisplayNameEl.textContent = currentUser.fullName;
+            if(userRoleEl) userRoleEl.textContent = `สถานะ: แอดมิน`;
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html'; // หรือหน้าที่ใช้ login
+            });
+            
+            document.getElementById('backToDashboardBtn').addEventListener('click', function() {
+                window.location.href = 'dashboard.html'; // หรือหน้าที่หลักหลัง login
+            });
+
+            let transactions = [];
+            let currentBalance = 0;
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let transactionIdToDelete = null; 
+            
+            const today = new Date();
+            document.getElementById('date').valueAsDate = today;
+            
+            loadTransactions(); // โหลดข้อมูลเมื่อหน้าเว็บพร้อม
+            
+            document.getElementById('transaction-form').addEventListener('submit', addTransaction);
+            document.getElementById('clear-form').addEventListener('click', clearForm);
+            document.getElementById('closeDeleteModalBtn').addEventListener('click', hideDeleteModal);
+            document.getElementById('cancel-delete').addEventListener('click', hideDeleteModal);
+            document.getElementById('confirm-delete').addEventListener('click', confirmDelete);
+
+            async function loadTransactions() {
+                currentBalance = 0;
+                totalIncome = 0;
+                totalExpense = 0;
+                
+                document.getElementById('transactions-table').innerHTML = `
+                    <tr class="text-gray-500 text-center">
+                        <td colspan="9" class="py-10">กำลังโหลดข้อมูล...</td>
+                    </tr>`;
+
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getTransactions`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        transactions = result.data.map(tx => ({
+                            ...tx,
+                            Amount: parseFloat(tx.Amount) // Apps Script ควรคืนค่า Amount เป็นตัวเลขอยู่แล้ว แต่เผื่อไว้
+                        }));
+                    } else {
+                        console.error('Error fetching transactions from script:', result.message);
+                        alert('เกิดข้อผิดพลาดในการดึงข้อมูล: ' + (result.message || 'Unknown error'));
+                        transactions = [];
+                    }
+                } catch (error) {
+                    console.error('Network error fetching transactions:', error);
+                    alert('เกิดข้อผิดพลาดเครือข่ายในการดึงข้อมูล: ' + error.message);
+                    transactions = [];
+                }
+                
+                // ตรวจสอบว่า Date เป็น string ที่ถูกต้องก่อน sort
+                transactions.sort((a, b) => {
+                    const dateA = a.Date ? new Date(a.Date) : new Date(0); //  Handle null/undefined dates
+                    const dateB = b.Date ? new Date(b.Date) : new Date(0);
+                    return dateA - dateB;
+                });
+                
+                const tableBody = document.getElementById('transactions-table');
+                tableBody.innerHTML = '';
+                
+                if (transactions.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr class="text-gray-500 text-center">
+                            <td colspan="9" class="py-10">ไม่พบรายการ</td>
+                        </tr>`;
+                    updateSummary();
+                    return;
+                }
+                
+                transactions.forEach((transaction, index) => {
+                    if (typeof transaction.Type === 'undefined' || typeof transaction.Amount === 'undefined') {
+                        console.warn('Skipping transaction with missing Type or Amount:', transaction);
+                        return; 
+                    }
+
+                    if (transaction.Type.toLowerCase() === 'income') {
+                        currentBalance += transaction.Amount;
+                        totalIncome += transaction.Amount;
+                    } else {
+                        currentBalance -= transaction.Amount;
+                        totalExpense += transaction.Amount;
+                    }
+                    transaction.balanceAfter = currentBalance; 
+                    
+                    const row = tableBody.insertRow();
+                    row.className = 'hover:bg-green-50 transition-colors duration-150';
+                                    
+                    const formattedDate = transaction.Date ? new Date(transaction.Date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric'}) : '-';
+                    const amountClass = transaction.Type.toLowerCase() === 'income' ? 'income-text font-semibold' : 'expense-text font-semibold';
+                    const typeText = transaction.Type.toLowerCase() === 'income' ? 'รายรับ' : 'รายจ่าย';
+                    const typeClass = transaction.Type.toLowerCase() === 'income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                    
+                    row.innerHTML = `
+                        <td class="text-center">${index + 1}</td>
+                        <td>${formattedDate}</td>
+                        <td>${transaction.Description || '-'}</td>
+                        <td><span class="px-2 py-1 text-xs rounded-full ${typeClass}">${typeText}</span></td>
+                        <td class="text-right ${amountClass}">฿${transaction.Amount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="text-right font-semibold">฿${transaction.balanceAfter.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>${transaction.Department || '-'}</td>
+                        <td>${transaction.Note || '-'}</td>
+                        <td class="text-center">
+                            <button class="text-red-500 hover:text-red-700 p-1" onclick="showDeleteModal('${transaction.TransactionID}')">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </td>
+                    `;
+                });
+                updateSummary();
+            }
+            
+            async function addTransaction(e) {
+                e.preventDefault();
+                const date = document.getElementById('date').value;
+                const description = document.getElementById('description').value;
+                const type = document.getElementById('type').value;
+                const amount = parseFloat(document.getElementById('amount').value);
+                const department = document.getElementById('department').value;
+                const note = document.getElementById('note').value;
+                
+                if (!date || !description || !type || isNaN(amount) || amount <= 0) {
+                    alert('กรุณากรอกข้อมูลบังคับ (*) ให้ครบถ้วนและถูกต้อง');
+                    return;
+                }
+                
+                const transactionData = { date, description, type, amount, department, note };
+                
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'cors', 
+                        cache: 'no-cache',
+                        headers: {
+                            // 'Content-Type': 'application/json', // Apps Script doPost with e.postData.contents expects text/plain for stringified JSON
+                        },
+                        body: JSON.stringify({ action: 'addTransaction', payload: transactionData }), // Send as string
+                        redirect: 'follow' // Apps Script web apps often redirect, so follow it
+                    });
+                     if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        clearForm();
+                        loadTransactions(); 
+                    } else {
+                        console.error('Error adding transaction:', result.message);
+                        alert('เกิดข้อผิดพลาดในการบันทึกรายการ: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Network error adding transaction:', error);
+                    alert('เกิดข้อผิดพลาดเครือข่ายในการบันทึกรายการ: ' + error.message);
+                }
+            }
+            
+            function clearForm() {
+                document.getElementById('transaction-form').reset(); 
+                document.getElementById('date').valueAsDate = today; 
+            }
+            
+            function updateSummary() {
+                document.getElementById('total-income').textContent = `฿${totalIncome.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                document.getElementById('total-expense').textContent = `฿${totalExpense.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                const balanceEl = document.getElementById('balance');
+                const currentBalanceHeaderEl = document.getElementById('currentBalanceHeader');
+                
+                balanceEl.textContent = `฿${currentBalance.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                currentBalanceHeaderEl.textContent = `ยอดคงเหลือ: ฿${currentBalance.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+                balanceEl.classList.remove('income-text', 'expense-text', 'text-blue-600');
+                currentBalanceHeaderEl.classList.remove('income-text', 'expense-text', 'text-green-700', 'text-red-600');
+
+                if (currentBalance >= 0) {
+                    balanceEl.classList.add('text-blue-600'); 
+                    currentBalanceHeaderEl.classList.add('text-green-700');
+                } else {
+                    balanceEl.classList.add('expense-text');
+                    currentBalanceHeaderEl.classList.add('text-red-600');
+                }
+            }
+            
+            // Expose to global scope for inline onclick
+            window.showDeleteModal = function(transactionId) {
+                transactionIdToDelete = transactionId;
+                document.getElementById('delete-modal').classList.remove('hidden');
+            }
+            
+            function hideDeleteModal() {
+                document.getElementById('delete-modal').classList.add('hidden');
+                transactionIdToDelete = null;
+            }
+            
+            async function confirmDelete() {
+                if (transactionIdToDelete) {
+                    try {
+                        const response = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            headers: {
+                                // 'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ action: 'deleteTransaction', payload: { id: transactionIdToDelete } }),
+                            redirect: 'follow'
+                        });
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        }
+                        const result = await response.json();
+
+                        if (result.status === 'success') {
+                            loadTransactions(); 
+                            hideDeleteModal();
+                        } else {
+                            console.error('Error deleting transaction:', result.message);
+                            alert('เกิดข้อผิดพลาดในการลบรายการ: ' + (result.message || 'Unknown error'));
+                            hideDeleteModal(); 
+                        }
+                    } catch (error) {
+                        console.error('Network error deleting transaction:', error);
+                        alert('เกิดข้อผิดพลาดเครือข่ายในการลบรายการ: ' + error.message);
+                        hideDeleteModal();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
