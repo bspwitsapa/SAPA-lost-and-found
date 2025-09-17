@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAPA Lost and Found - รายการของทั้งหมด</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="sapa.png" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        :root { --primary: #1e8449; --primary-dark: #145a32; --primary-light: #82e0aa; --secondary: #ffffff; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; }
+        .btn-primary { background-color: var(--primary); color: white; transition: all 0.3s; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); transition: all 0.3s; }
+        .btn-outline:hover { background-color: var(--primary); color: white; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 132, 73, 0.2); outline:none; }
+        .header-gradient { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); }
+        .logout-btn-custom { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.3s; }
+        .logout-btn-custom:hover { background-color: rgba(255,255,255,0.2); }
+        .table th { background-color: #E6FFFA; }
+        .modal-content { max-height: 90vh; }
+        .status-badge { display: inline-flex; padding: 0.25rem 0.75rem; font-size: 0.75rem; line-height: 1rem; font-weight: 600; border-radius: 9999px; }
+        .status-badge.found { background-color: #d1fae5; color: #065f46; } 
+        .status-badge.lost { background-color: #fee2e2; color: #991b1b; } 
+        .status-badge.claimed, .status-badge.returned, .status-badge.resolved { background-color: #dbeafe; color: #1e40af; } 
+        .status-badge.default { background-color: #e5e7eb; color: #374151; } 
+        .detail-modal-image { max-height: 20rem; width: auto; margin: 0 auto; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
+        .image-preview-container { width: 100%; max-width: 200px; margin-top: 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; overflow: hidden; }
+        .image-preview { width: 100%; height: auto; display: block; }
+        .camera-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1050; }
+        .camera-modal-content { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 90%; width: 500px; }
+        #sharedCameraFeed { width: 100%; max-width: 400px; height: auto; border: 1px solid #ccc; margin-bottom: 15px; border-radius: 4px; background-color: #333; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="header-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <img src="https://img2.pic.in.th/pic/-----------Facebook.png" alt="โลโก้โรงเรียน" class="h-14" onerror="this.onerror=null; this.src='https://placehold.co/56x56/E2E8F0/4A5568?text=Logo';">
+                <div>
+                    <h1 class="text-2xl font-bold">SAPA Lost and Found</h1>
+                    <p class="text-sm opacity-90">คณะกรรมการสภานักเรียนโรงเรียนบางสะพานวิทยา</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="font-semibold text-lg" id="userDisplayName">ชื่อผู้ใช้</p>
+                    <p class="text-xs opacity-90" id="userRole">สถานะ: ผู้ใช้งาน</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn-custom font-medium">ออกจากระบบ</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="itemsListContainer" class="bg-white rounded-xl shadow-xl p-6 sm:p-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 flex items-center">
+                <button class="back-btn mr-3 text-green-600 hover:text-green-800 transition-colors" title="กลับไปหน้า Dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+               ค้นหานักเรียน
+            </h2>
+            
+            <div class="mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex-grow">
+                        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อ-สกุล ห้อง เลขประจำตัว..." class="form-input w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" />
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="searchBtn" class="btn-primary px-4 py-2 rounded-md">ค้นหา</button>
+                    </div>
+                </div>
+            </div>
+
+        <div id="searchMessage" class="text-sm text-gray-600 mb-3 hidden"></div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-auto divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-sm">รหัส</th>
+                <th class="px-3 py-2 text-left text-sm">ชื่อ-สกุล</th>
+                <th class="px-3 py-2 text-left text-sm">ห้อง</th>
+                <th class="px-3 py-2 text-left text-sm">ครูที่ปรึกษา</th>
+                <th class="px-3 py-2 text-left text-sm">เบอร์ครู</th>
+                <th class="px-3 py-2 text-left text-sm">หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTbody" class="bg-white divide-y divide-gray-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // <-- เปลี่ยนเป็น URL ของ Web App ของคุณถ้าจำเป็น -->
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMlReHBWsB9iGevSQG4-0kiBjn1zbBjG1a_bPWb1yg7nms1CMUrGkHxOpKtttHHZFNCA/exec';
+
+      // user info (ไม่เปลี่ยนสไตล์)
+      const currentUserStr = localStorage.getItem('currentUser');
+      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+      if (currentUser) {
+        document.getElementById('userDisplayName').textContent = currentUser.name || 'ผู้ใช้งาน';
+        document.getElementById('userRole').textContent = 'สถานะ : ' + (currentUser.role || 'ผู้ใช้งาน');
+      }
+
+      // logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('currentUser');
+          window.location.href = 'index.html';
+        });
+      }
+
+      // back button: กลับไป dashboard.html
+      const backBtn = document.querySelector('.back-btn');
+      if (backBtn) {
+        backBtn.addEventListener('click', function() {
+          window.location.href = 'dashboard.html';
+        });
+      }
+
+      // ผูก element ที่ถูกต้อง
+      const input = document.getElementById('searchInput');
+      const btn = document.getElementById('searchBtn');
+      const message = document.getElementById('searchMessage');
+      const tbody = document.getElementById('resultsTbody');
+
+      // ฟังก์ชันเรียก API
+      async function doSearch() {
+        const q = input.value.trim();
+        message.classList.add('hidden');
+        tbody.innerHTML = '';
+        showMessage('กำลังค้นหา...', false);
+        try {
+          const url = `${APPS_SCRIPT_URL}?action=searchStudent&q=${encodeURIComponent(q)}&limit=200`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('HTTP error ' + res.status);
+          const json = await res.json();
+          if (json.status === 'success') {
+            renderResults(json.students || []);
+          } else {
+            showMessage('เกิดข้อผิดพลาด: ' + (json.message || 'ไม่สำเร็จ'), true);
+          }
+        } catch (err) {
+          console.error(err);
+          showMessage('เกิดข้อผิดพลาดในการเชื่อมต่อ', true);
+        }
+      }
+
+      // แสดงผลลงตาราง
+      function renderResults(list) {
+        tbody.innerHTML = '';
+        if (!list || list.length === 0) {
+          showMessage('ไม่พบผลลัพธ์', true);
+          return;
+        }
+        list.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.studentId || '-')}</td>
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.fullName || '-')}</td>
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.class || '-')}</td>
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.advisor || '-')}</td>
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.advisorPhone || '-')}</td>
+            <td class="px-3 py-2 text-sm">${escapeHtml(item.notes || '-')}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        showMessage(`พบ ${list.length} รายการ`, false);
+      }
+
+      function showMessage(text, isError) {
+        message.textContent = text;
+        message.classList.remove('hidden');
+        message.style.color = isError ? 'crimson' : '#0f5132';
+      }
+
+      // events
+      if (btn) btn.addEventListener('click', doSearch);
+      if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+      function escapeHtml(s) {
+        return s ? String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;') : '';
+      }
+    });
+  </script>
+</body>
+</html>
